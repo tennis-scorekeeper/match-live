@@ -1,25 +1,58 @@
 import React, {Component} from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Button} from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Button, ScrollView} from 'react-native';
 import firebase from 'react-native-firebase';
+import {hashCode} from './hash.js';
 
 export default class Home extends React.Component {
 
-	 static navigationOptions = {
+	static navigationOptions = {
 		title: 'Register',
-	  };
+	};
 
 	constructor(props) {
 		super(props);
-		this.state = {email: '', name: '', password: '', cpassword: ''};
+		this.state = {email: '', name: '', password: '', cpassword: '',
+									validEmail: true, validName: true, validPassword: true, emailTaken: false};
+		console.log(this.props.navigation.state.params);
+		if (this.props.navigation.state.params.error) {
+			const {fillEmail, fillName, fillPassword} = this.props.navigation.state.params.fillFields;
+			const {validEmail, validName, validPassword, emailTaken} = this.props.navigation.state.params.validFields;
+			this.state.email=fillEmail;
+			this.state.name=fillName;
+			this.state.password=fillPassword;
+			this.state.validEmail = validEmail;
+			this.state.validName = validName;
+			this.state.validPassword = validPassword;
+			this.state.emailTaken = emailTaken;
+		}
 	}
 
 	buttonClickListener = () => {
-		const {pop} = this.props.navigation;
+		const {pop, replace} = this.props.navigation;
 		var rootRef = firebase.database().ref();
 		var userRef = rootRef.child("users");
 		const {email, name, password, cpassword} = this.state;
-		if (email != '') {
-			userRef.child(email).set({password : password, name : name})
+		var validEmail = true;
+		var validName = true;
+		var validPassword = true;
+
+		if (email.indexOf('#') != -1 || email.indexOf('$') != -1
+				|| email.indexOf('[') != -1 || email.indexOf(']') != -1 || email.indexOf('@') == -1) {
+			validEmail = false;
+		}
+
+		if (name == '' || name.indexOf(' ') == -1) {
+			validName = false;
+		}
+
+		if (password.length < 6 || password != cpassword) {
+			validPassword = false;
+		}
+		var validFields = {validEmail: validEmail, validName: validName, validPassword: validPassword, emailTaken: false};
+		var fillFields = {fillEmail: email, fillName: name, fillPassword: password};
+
+		if (validEmail && validName && validPassword) {
+			userRef.child(email.toLowerCase().replace('.', ',')).set({password : hashCode(password), name : name})
 			.then(res => {
 				if (res == null) {
 					pop();
@@ -27,86 +60,126 @@ export default class Home extends React.Component {
 			})
 			.catch(err => {
 				console.log(err);
+				validFields.emailTaken = true;
+				replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
 			});
+		} else {
+			replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
 		}
 	}
 
-    render(){
-	const {navigate} = this.props.navigation;
+  render(){
+		let emailLabel, nameLabel, passwordLabel;
+		if (this.state.validEmail) {
+			if (this.state.emailTaken) {
+				emailLabel = <Text style={styles.errorLabels}>Email - Email already in use!</Text>;
+			} else {
+				emailLabel = <Text style={styles.labels}>Email</Text>;
+			}
+		} else {
+			emailLabel = <Text style={styles.errorLabels}>Email - Invalid Email</Text>;
+		}
+		if (this.state.validName) {
+			nameLabel = <Text style={styles.labels}>Full Name</Text>;
+		} else {
+			nameLabel = <Text style={styles.errorLabels}>Full Name - Please enter full name</Text>
+		}
+		if (this.state.validPassword) {
+			passwordLabel = <Text style={styles.labels}>Password</Text>;
+		} else {
+			passwordLabel = <Text style={styles.errorLabels}>Password - Invalid password</Text>;
+		}
+		const {navigate} = this.props.navigation;
 		return(
-		<View style={styles.mainView}>
-			<View style={styles.subView}>
-				<Text style={styles.labels}>Email</Text>
-				<TextInput 
-					style={styles.inputs}
-					onChangeText={(email) => this.setState({email})}
-				/>
-			</View>
-			<View style={styles.subView}>
-				<Text style={styles.labels}>Full Name</Text>
-				<TextInput 
-					style={styles.inputs}
-					onChangeText={(name) => this.setState({name})}
-				/>
-			</View>
-			<View style={styles.subView}>
-				<Text style={styles.labels}>Password</Text>
-				<TextInput 
-					style={styles.inputs}
-					onChangeText={(password) => this.setState({password})}
-				/>
-			</View>
-			<View style={styles.subView}>
-				<Text style={styles.labels}>Confirm Password</Text>
-				<TextInput 
-					style={styles.inputs}
-					onChangeText={(cpassword) => this.setState({cpassword})}
-				/>
-			</View>
-			<Button
-				title='Submit'
-				onPress={this.buttonClickListener} />
-		</View>
+			<ScrollView style={styles.mainView}>
+				<View style={styles.subView}>
+					<View>
+						{emailLabel}
+						<TextInput 
+							style={styles.inputs}
+							defaultValue={this.state.email}
+							onChangeText={(email) => this.setState({email})}
+						/>
+					</View>
+				</View>
+				<View style={styles.subView}>
+					<View>
+						{nameLabel}
+						<TextInput 
+							style={styles.inputs}
+							defaultValue={this.state.name}
+							onChangeText={(name) => this.setState({name})}
+						/>
+					</View>
+				</View>
+				<View style={styles.subView}>
+					<View>
+						{passwordLabel}
+						<TextInput 
+							style={styles.inputs}
+							defaultValue={this.state.password}
+							secureTextEntry={true}
+							onChangeText={(password) => this.setState({password})}
+						/>
+					</View>
+				</View>
+				<View style={styles.subView}>
+					<View>
+						<Text style={styles.labels}>Confirm Password</Text>
+						<TextInput 
+							style={styles.inputs}
+							secureTextEntry={true}
+							onChangeText={(cpassword) => this.setState({cpassword})}
+						/>
+					</View>
+				</View>
+				<View style={styles.subView}>
+					<TouchableOpacity onPress={this.buttonClickListener} style={styles.buttons}>
+						<Text style={styles.buttonText}>Submit</Text>
+					</TouchableOpacity>
+				</View>
+			</ScrollView>
 		);
   }
 }
 
 const styles = StyleSheet.create({
   mainView: {
-	flex: 1, 
-	paddingTop:20,
-	justifyContent: 'flex-start',
-	alignItems: 'center',
+		paddingTop:20,
   },
   subView: {
-  	flex: 3,
+		alignItems:'center',
+		margin:20,
   },
   inputs: {
-	justifyContent: 'center',
-	alignItems: 'center',
-	width: 200,
-	height: 35,
-	fontSize: 16,
-	borderBottomColor: 'black',
-	borderBottomWidth: 2,
+		justifyContent: 'center',
+		alignItems: 'center',
+		width: 250,
+		height: 50,
+		fontSize: 16,
+		borderBottomColor: 'black',
+		borderBottomWidth: 2,
   },
   labels: {
-	fontWeight: 'bold',
-	color: 'black',
-	fontSize: 16,
+		fontWeight: 'bold',
+		color: 'black',
+		fontSize: 16,
+	},
+	errorLabels: {
+		fontWeight: 'bold',
+		color: 'red',
+		fontSize: 16,
   },
   buttons: {
-	flex: 1,
-	justifyContent: 'center',
-	alignItems: 'center',
-	backgroundColor: 'blue',
-	width: 150,
-	height: 35,
-	margin: 20,
+		justifyContent: 'center',
+		alignItems: 'center',
+		backgroundColor: 'blue',
+		width: 150,
+		height: 35,
   },
-  buttonText: {
-	fontWeight: 'bold',
-	color: 'white',
-	fontSize: 16,
+	buttonText: {
+		fontWeight: 'bold',
+		color: 'white',
+		fontSize: 16,
   }
 });

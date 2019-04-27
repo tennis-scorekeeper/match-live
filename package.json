@@ -7,11 +7,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "crypto": "^1.0.1",
     "react": "16.8.3",
     "react-native": "0.59.5",
     "react-native-firebase": "^5.3.1",
     "react-native-gesture-handler": "^1.1.0",
-    "react-navigation": "^3.9.1"
+    "react-navigation": "^3.9.1",
+    "sjcl": "^1.0.8"
   },
   "devDependencies": {
     "@babel/core": "7.4.4",

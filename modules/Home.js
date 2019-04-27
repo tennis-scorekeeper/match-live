@@ -18,7 +18,7 @@ export default class Home extends React.Component {
 			</TouchableOpacity>
 			<TouchableOpacity
 				style={styles.buttons}
-				onPress={() => navigate('Register', {name: 'Jane'})}>
+				onPress={() => navigate('Register', {error: false})}>
 				<Text style={styles.buttonText}>Register</Text>
 			</TouchableOpacity>
 		  </View>

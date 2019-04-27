@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TextInput, TouchableOpacity, Button, ScrollView
 import firebase from 'react-native-firebase';
 import {hashCode} from './hash.js';
 
-export default class Home extends React.Component {
+export default class Register extends React.Component {
 
 	static navigationOptions = {
 		title: 'Register',
@@ -12,8 +12,7 @@ export default class Home extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {email: '', name: '', password: '', cpassword: '',
-									validEmail: true, validName: true, validPassword: true, emailTaken: false};
-		console.log(this.props.navigation.state.params);
+						validEmail: true, validName: true, validPassword: true, emailTaken: false};
 		if (this.props.navigation.state.params.error) {
 			const {fillEmail, fillName, fillPassword} = this.props.navigation.state.params.fillFields;
 			const {validEmail, validName, validPassword, emailTaken} = this.props.navigation.state.params.validFields;
@@ -89,7 +88,6 @@ export default class Home extends React.Component {
 		} else {
 			passwordLabel = <Text style={styles.errorLabels}>Password - Invalid password</Text>;
 		}
-		const {navigate} = this.props.navigation;
 		return(
 			<ScrollView style={styles.mainView}>
 				<View style={styles.subView}>
@@ -175,7 +173,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		backgroundColor: 'blue',
 		width: 150,
-		height: 35,
+		height: 50,
   },
 	buttonText: {
 		fontWeight: 'bold',

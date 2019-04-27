@@ -30,11 +30,13 @@ project.xcworkspace
 # Android/IntelliJ
 #
 build/
+release/
 .idea
 .gradle
 local.properties
 *.iml
 android/app/google-services.json
+android/app/match-live-store.jks
 
 # node.js
 #

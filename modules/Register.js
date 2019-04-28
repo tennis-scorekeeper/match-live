@@ -51,17 +51,29 @@ export default class Register extends React.Component {
 		var fillFields = {fillEmail: email, fillName: name, fillPassword: password};
 
 		if (validEmail && validName && validPassword) {
-			userRef.child(email.toLowerCase().replace('.', ',')).set({password : hashCode(password), name : name})
-			.then(res => {
-				if (res == null) {
+			userRef.child(email.toLowerCase().replace('.',',')).once('value').then(ss => {
+				if (ss.exists()) {
+					validFields.emailTaken = true;
+					replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
+				} else {
+					userRef.child(email.toLowerCase().replace('.', ',')).set({password : hashCode(password), name : name});
 					pop();
 				}
-			})
-			.catch(err => {
-				console.log(err);
-				validFields.emailTaken = true;
-				replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
 			});
+			
+			// CODE FOR UNIQUE EMAILS BY FIREBASE RULES
+			
+			// userRef.child(email.toLowerCase().replace('.', ',')).set({password : hashCode(password), name : name})
+			// .then(res => {
+			// 	if (res == null) {
+			// 		pop();
+			// 	}
+			// })
+			// .catch(err => {
+			// 	console.log(err);
+			// 	validFields.emailTaken = true;
+			// 	replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
+			// });
 		} else {
 			replace('Register', {error: true, validFields: validFields, fillFields: fillFields});
 		}

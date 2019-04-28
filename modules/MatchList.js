@@ -19,6 +19,10 @@ export default class MatchList extends React.Component {
         replace('CreateMatch', {email: this.state.email, error: false, tournament: this.state.tournament});
     }
 
+    selectMatch(m) {
+        console.log(m);
+    }
+
     render() {
         const {email, tournament} = this.state;
         var disp = [];
@@ -26,7 +30,7 @@ export default class MatchList extends React.Component {
             for (var i = 0 ; i < tournament.matches.length; i++) {
                 var m = tournament.matches[i];
                 disp.push(
-                    <TouchableOpacity key={i} onPress={() => this.selectTournament(m)}>
+                    <TouchableOpacity key={i} onPress={() => this.selectMatch(m)}>
                         <Text style={styles.listing}>{m.p1name} vs. {m.p2name}</Text>
                     </TouchableOpacity>)
             }

@@ -27,10 +27,10 @@ export default class Login extends React.Component {
 		var {email, password} = this.state;
 		password = hashCode(password);
 		
-		if (email.length == 0) {
-			email = 'ali67219@gmail.com';
-			password = hashCode('test123');
-		}
+		// if (email.length == 0) {
+		// 	email = 'ali67219@gmail.com';
+		// 	password = hashCode('test123');
+		// }
 
 		if (email.length > 0) {
 			userRef.child(email.toLowerCase().replace('.',',')).once('value').then(ss => {

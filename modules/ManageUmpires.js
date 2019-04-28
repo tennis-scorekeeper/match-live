@@ -18,7 +18,43 @@ export default class ManageUmpires extends React.Component {
 	static navigationOptions =
 	{
 		title: 'Manage Umpires',
-	};
+    };
+    
+    deleteUmpire(umpire) {
+        const {replace} = this.props.navigation;
+        var {email, tournament} = this.state;
+        var rootRef = firebase.database().ref();
+        var userRef = rootRef.child("users");
+        var tournamentRef = rootRef.child("tournaments").child(tournament.id);
+        userRef.child(umpire).once('value').then(ss => {
+            var userTournaments = ss.child('tournaments').val();
+            for (var i = 0; i < userTournaments.length; i++) {
+                if (userTournaments[i] == tournament.id) {
+                    userTournaments.splice(i, 1);
+                }
+            }
+            userRef.child(umpire).update({tournaments: userTournaments});
+            tournamentRef.once('value').then(tss => {
+                var tournamentUmpires = tss.child('umpires').val();
+                for (var i = 0; i < tournamentUmpires.length; i++) {
+                    if (tournamentUmpires[i] == umpire) {
+                        tournamentUmpires.splice(i, 1);
+                    }
+                }
+                tournamentRef.update({umpires: tournamentUmpires});
+                replace('ManageUmpires', 
+                                {email: email, 
+                                    error: 'removed',
+                                    modedUmpire: umpire,
+                                    tournament: {
+                                                id: tournament.id, name: tournament.name, 
+                                                    date: tournament.date, 
+                                                    admin: tournament.admin, 
+                                                    matches: tournament.matches, 
+                                                    umpires: tournamentUmpires}});
+            });
+        })
+    }
 
 	buttonClickListener = () => {
         const {replace} = this.props.navigation;
@@ -30,7 +66,7 @@ export default class ManageUmpires extends React.Component {
 
         userRef.child(newUmpire).once('value').then(ss => {
             if (!ss.exists()) {
-                replace('ManageUmpires', {email: email, error: 'noUser', tournament: tournament});
+                replace('ManageUmpires', {email: email, error: 'noUser', modedUmpire: newUmpire, tournament: tournament});
             } else {
                 tournamentRef.child('umpires').once('value').then(tUmpires => {
                     var tumps = [];
@@ -40,7 +76,7 @@ export default class ManageUmpires extends React.Component {
                     var alreadyAdded = false;
                     tumps.forEach(existingUmpire => {
                         if (existingUmpire == newUmpire) {
-                            replace('ManageUmpires', {email: email, error: 'alreadyAdded', tournament: tournament});
+                            replace('ManageUmpires', {email: email, error: 'alreadyAdded', modedUmpire: newUmpire, tournament: tournament});
                             alreadyAdded = true;
                         }
                     });
@@ -59,6 +95,7 @@ export default class ManageUmpires extends React.Component {
                             replace('ManageUmpires', 
                                 {email: email, 
                                     error: 'success',
+                                    modedUmpire: newUmpire,
                                     tournament: {
                                                 id: tournament.id, name: tournament.name, 
                                                     date: tournament.date, 
@@ -74,19 +111,26 @@ export default class ManageUmpires extends React.Component {
 	
     render(){
         const {email, tournament} = this.state;
+        const {error, modedUmpire} = this.props.navigation.state.params
 		let errorLabel = null;
-		if (this.props.navigation.state.params.error == 'noUser') {
-			errorLabel = <Text style={styles.errorLabels}>Umpire does not exist!</Text>;
-		} else if (this.props.navigation.state.params.error == 'alreadyAdded') {
-			errorLabel = <Text style={styles.errorLabels}>This umpire has already been added!</Text>;
-		} else if (this.props.navigation.state.params.error == 'success') {
-			errorLabel = <Text style={styles.successLabels}>Umpire added!</Text>;
+		if (error == 'noUser') {
+			errorLabel = <Text style={styles.errorLabels}>Umpire: {modedUmpire.replace(',','.')} does not exist!</Text>;
+		} else if (error == 'alreadyAdded') {
+			errorLabel = <Text style={styles.errorLabels}>Umpire: {modedUmpire.replace(',','.')} already added!</Text>;
+		} else if (error == 'success') {
+			errorLabel = <Text style={styles.successLabels}>Umpire: {modedUmpire.replace(',','.')} added!</Text>;
+        } else if (error == 'removed') {
+			errorLabel = <Text style={styles.errorLabels}>Umpire: {modedUmpire.replace(',','.')} removed!</Text>;
         }
         
         var umpires = [];
         if (tournament.umpires != null) {
             tournament.umpires.forEach(umpire => {
-                umpires.push(<Text key={umpire} style={styles.listing}>{umpire.replace(',','.')}</Text>)
+                umpires.push(
+                    <TouchableOpacity key={umpire} onPress={() => this.deleteUmpire(umpire)}>
+                        <Text style={styles.listing}>{umpire.replace(',','.')}</Text>
+                    </TouchableOpacity>
+                )
             })
         }
 		return(
@@ -200,5 +244,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginTop: 20,
         color: 'black',
+    },
+    subLarge: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    subSmall: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 });

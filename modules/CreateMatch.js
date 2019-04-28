@@ -26,7 +26,7 @@ export default class CreateMatch extends React.Component {
 		if (p1name.length > 0 && p2name.length > 0) {
             var newMatch = {date: date, p1name: p1name, p1from: p1from, p2name: p2name, 
                 p2from: p2from, round: round, division: division, matchFormat: matchFormat, 
-                scoringFormat: scoringFormat, referee: referee};
+                scoringFormat: scoringFormat, referee: referee, done: false, score: ''};
             tournamentRef.child('matches').once('value').then(ss => {
                 var tmp = [];
                 if (ss.exists()) {
@@ -36,7 +36,7 @@ export default class CreateMatch extends React.Component {
                 tournamentRef.update({matches: tmp});
                 tournamentRef.once('value').then(tss => {
                     replace('MatchList', {email: email, tournament: {id: tournament.id, name: tournament.name, 
-                                                        date: tournament.date, admin: tournament.admin, matches: tss.val().matches}});
+                                            date: tournament.date, admin: tournament.admin, matches: tss.val().matches, umpires: tournament.umpires}});
                 })
             })
 		} else {
@@ -68,7 +68,7 @@ export default class CreateMatch extends React.Component {
 				</View>
 				<View style={styles.subView2}>
 					<View style={{flex:1}}>
-						<Text style={styles.labels}>Player 1 name</Text>
+						<Text style={styles.labels}>Player 1 Name</Text>
 						<TextInput 
 							style={styles.inputs}
 							defaultValue={this.state.p1name}
@@ -86,7 +86,7 @@ export default class CreateMatch extends React.Component {
 				</View>
                 <View style={styles.subView2}>
 					<View style={{flex:1}}>
-						<Text style={styles.labels}>Player 2 name</Text>
+						<Text style={styles.labels}>Player 2 Name</Text>
 						<TextInput 
 							style={styles.inputs}
 							defaultValue={this.state.p2name}

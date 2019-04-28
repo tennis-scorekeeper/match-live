@@ -27,10 +27,10 @@ export default class Login extends React.Component {
 		var {email, password} = this.state;
 		password = hashCode(password);
 		
-		// if (email.length == 0) {
-		// 	email = 'ali67219@gmail.com';
-		// 	password = hashCode('test123');
-		// }
+		if (email.length == 0) {
+			email = 'ali67219@gmail.com';
+			password = hashCode('test123');
+		}
 
 		if (email.length > 0) {
 			userRef.child(email.toLowerCase().replace('.',',')).once('value').then(ss => {
@@ -41,7 +41,9 @@ export default class Login extends React.Component {
 						var tournaments = [];
 						if (ss.val().tournaments != null) {
 							ss.val().tournaments.forEach(id => {
-								tournaments.push({id: id, name: tss.child(id).val().name, date: tss.child(id).val().date, admin: tss.child(id).val().admin, matches: tss.child(id).val().matches})
+								tournaments.push({id: id, name: tss.child(id).val().name, 
+									date: tss.child(id).val().date, admin: tss.child(id).val().admin, 
+									matches: tss.child(id).val().matches, umpires: tss.child(id).val().umpires})
 							})
 						}
 						navigate('TournamentList', {email: email, tournaments: tournaments});

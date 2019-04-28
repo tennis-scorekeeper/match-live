@@ -3,36 +3,34 @@ import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity } from 
 import firebase from 'react-native-firebase';
 import {hashCode} from './hash.js';
 
-export default class TournamentList extends React.Component {
+export default class MatchList extends React.Component {
     constructor(props) {
 		super(props);
-        this.state = {email: this.props.navigation.state.params.email, tournaments: this.props.navigation.state.params.tournaments};
-	}
-    static navigationOptions =
-	{
-		title: 'Tournaments',
-    };
-
-    createTournamentListener = () => {
-        const {replace} = this.props.navigation;
-        replace('CreateTournament', {email: this.state.email, error: false});
+        this.state = {email: this.props.navigation.state.params.email, tournament: this.props.navigation.state.params.tournament};
     }
 
-    selectTournament(t) {
-        const {navigate} = this.props.navigation;
-        navigate('MatchList', {email: this.state.email, error: false, tournament: t});
+    static navigationOptions =
+	{
+		title: 'Matches',
+    };
+
+    createMatchListener = () => {
+        const {replace} = this.props.navigation;
+        replace('CreateMatch', {email: this.state.email, error: false, tournament: this.state.tournament});
     }
 
     render() {
-        const {email, tournaments} = this.state;
+        const {email, tournament} = this.state;
         var disp = [];
-        tournaments.forEach(t => {
-            disp.push(
-                <TouchableOpacity key={t.id} onPress={() => this.selectTournament(t)}>
-                    <Text style={styles.listing}>{t.name} {t.date}</Text>
-                </TouchableOpacity>
-            )
-        });
+        if (tournament.matches != null) {
+            for (var i = 0 ; i < tournament.matches.length; i++) {
+                var m = tournament.matches[i];
+                disp.push(
+                    <TouchableOpacity key={i} onPress={() => this.selectTournament(m)}>
+                        <Text style={styles.listing}>{m.p1name} vs. {m.p2name}</Text>
+                    </TouchableOpacity>)
+            }
+        }
 
         return(
             <View style={styles.mainView}>
@@ -42,8 +40,8 @@ export default class TournamentList extends React.Component {
                     </ScrollView>
                 </View>
                 <View style={styles.buttonsView}>
-                    <TouchableOpacity onPress={this.createTournamentListener} style={styles.buttons}>
-						<Text style={styles.buttonText}>Create Tournament</Text>
+                    <TouchableOpacity onPress={this.createMatchListener} style={styles.buttons}>
+						<Text style={styles.buttonText}>Create Match</Text>
 					</TouchableOpacity>
                 </View>
             </View>

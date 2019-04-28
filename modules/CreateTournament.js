@@ -12,7 +12,7 @@ export default class Login extends React.Component {
 
 	static navigationOptions =
 	{
-		title: 'Sign In',
+		title: 'Create Tournament',
 	};
 
 	buttonClickListener = () => {
@@ -38,14 +38,14 @@ export default class Login extends React.Component {
 								var tournaments = [];
 								if (tmp != null) {
 									tmp.forEach(id => {
-										tournaments.push({id: id, name: tss.child(id).val().name, date: tss.child(id).val().date, admin: tss.child(id).val().admin})
+										tournaments.push({id: id, name: tss.child(id).val().name, date: tss.child(id).val().date, admin: tss.child(id).val().admin, matches: tss.child(id).val().matches})
 									})
 								}
 								replace('TournamentList', {email: email, tournaments: tournaments});
 							});
 						});
 		} else {
-			replace('CreateTournament', {error: true});
+			replace('CreateTournament', {error: true, email: email});
 		}
 	}
 	

@@ -6,7 +6,9 @@ import {hashCode} from './hash.js';
 export default class TournamentList extends React.Component {
     constructor(props) {
 		super(props);
-        this.state = {email: this.props.navigation.state.params.email, tournaments: this.props.navigation.state.params.tournaments};
+        this.state = {
+            email: this.props.navigation.state.params.email, 
+            tournaments: this.props.navigation.state.params.tournaments};
 	}
     static navigationOptions =
 	{
@@ -14,13 +16,39 @@ export default class TournamentList extends React.Component {
     };
 
     createTournamentListener = () => {
-        const {replace} = this.props.navigation;
-        replace('CreateTournament', {email: this.state.email, error: false});
+        const {replace, navigate} = this.props.navigation;
+        navigate('CreateTournament', {
+                            email: this.state.email, 
+                            error: false,
+                            onGoBack: () => this.refresh()});
+    }
+
+    refresh() {
+        this.props.navigation.replace('TournamentList', this.state);
     }
 
     selectTournament(t) {
         const {navigate} = this.props.navigation;
-        navigate('MatchList', {email: this.state.email, error: false, tournament: t});
+        navigate('MatchList', {email: this.state.email, tournament: t});
+    }
+
+    componentDidMount() {
+        var rootRef = firebase.database().ref();
+		var userRef = rootRef.child("users");
+        var tournamentsRef = rootRef.child("tournaments");
+        var {email} = this.state;
+        userRef.child(email.toLowerCase().replace('.',',')).once('value').then(ss => {
+            tournamentsRef.once('value').then(tss => {
+                var tournaments = [];
+                if (ss.val().tournaments != null) {
+                    ss.val().tournaments.forEach(id => {
+                        tournaments.push({id: id, name: tss.child(id).val().name, 
+                            date: tss.child(id).val().date})
+                    })
+                }
+                this.setState({tournaments: tournaments});
+            });
+        });
     }
 
     render() {

@@ -14,9 +14,32 @@ export default class MatchList extends React.Component {
 		title: 'Matches',
     };
 
+    refresh() {
+        this.props.navigation.replace('MatchList', this.state);
+    }
+
+    componentDidMount() {
+        var rootRef = firebase.database().ref();
+        var tournamentsRef = rootRef.child("tournaments");
+        var {email, tournament} = this.state;
+        tournamentsRef.child(tournament.id).once('value').then(tss => {
+            this.setState({tournament: {
+                    id: tournament.id, 
+                    name: tss.val().name, 
+                    date: tss.val().date, 
+                    admin: tss.val().admin, 
+                    matches: tss.val().matches, 
+                    umpires: tss.val().umpires}});
+        });
+    }
+
     createMatchListener = () => {
-        const {replace} = this.props.navigation;
-        replace('CreateMatch', {email: this.state.email, error: false, tournament: this.state.tournament});
+        const {replace, navigate} = this.props.navigation;
+        navigate('CreateMatch', {
+            email: this.state.email, 
+            error: false, 
+            tournament: this.state.tournament,
+            onGoBack: () => this.refresh()});
     }
 
     selectMatch(m) {
@@ -25,7 +48,11 @@ export default class MatchList extends React.Component {
 
     manageUmpires = () => {
         const {navigate} = this.props.navigation;
-        navigate('ManageUmpires', {email: this.state.email, error: null, tournament: this.state.tournament});
+        navigate('ManageUmpires', {
+            email: this.state.email, 
+            error: null, 
+            tournament: this.state.tournament,
+            onGoBack: () => this.refresh()});
     }
 
     render() {
@@ -42,7 +69,7 @@ export default class MatchList extends React.Component {
         }
 
         let addUmpire = null;
-        if (tournament.admin.replace(',','.') == email.toLowerCase()) {
+        if (tournament.admin != null && tournament.admin.replace(',','.') == email.toLowerCase()) {
             addUmpire = <View style={styles.buttonView}>
                             <TouchableOpacity onPress={this.manageUmpires} style={styles.buttons}>
                                 <Text style={styles.buttonText}>Manage Umpires</Text>

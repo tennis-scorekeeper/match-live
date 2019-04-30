@@ -23,7 +23,6 @@ export default class Login extends React.Component {
 		const {pop, navigate, replace} = this.props.navigation;
 		var rootRef = firebase.database().ref();
 		var userRef = rootRef.child("users");
-		var tournamentsRef = rootRef.child("tournaments");
 		var {email, password} = this.state;
 		password = hashCode(password);
 		
@@ -37,17 +36,7 @@ export default class Login extends React.Component {
 				if (!ss.exists() || ss.val().password != password) {
 					replace('Login', {error: true, fillEmail: email});
 				} else {
-					tournamentsRef.once('value').then(tss => {
-						var tournaments = [];
-						if (ss.val().tournaments != null) {
-							ss.val().tournaments.forEach(id => {
-								tournaments.push({id: id, name: tss.child(id).val().name, 
-									date: tss.child(id).val().date, admin: tss.child(id).val().admin, 
-									matches: tss.child(id).val().matches, umpires: tss.child(id).val().umpires})
-							})
-						}
-						navigate('TournamentList', {email: email, tournaments: tournaments});
-					});
+					navigate('TournamentList', {email: email, tournaments: []});
 				}
 			});
 		} else {

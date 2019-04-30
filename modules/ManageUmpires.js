@@ -42,6 +42,7 @@ export default class ManageUmpires extends React.Component {
                     }
                 }
                 tournamentRef.update({umpires: tournamentUmpires});
+                this.props.navigation.state.params.onGoBack();
                 replace('ManageUmpires', 
                                 {email: email, 
                                     error: 'removed',
@@ -92,6 +93,7 @@ export default class ManageUmpires extends React.Component {
                         userRef.child(newUmpire).update({tournaments: tmp});
 
                         tournamentRef.once('value').then(tss => {
+                            this.props.navigation.state.params.onGoBack();
                             replace('ManageUmpires', 
                                 {email: email, 
                                     error: 'success',

@@ -33,11 +33,9 @@ export default class CreateMatch extends React.Component {
                     tmp = ss.val();
                 }
                 tmp.push(newMatch);
-                tournamentRef.update({matches: tmp});
-                tournamentRef.once('value').then(tss => {
-                    replace('MatchList', {email: email, tournament: {id: tournament.id, name: tournament.name, 
-                                            date: tournament.date, admin: tournament.admin, matches: tss.val().matches, umpires: tournament.umpires}});
-                })
+				tournamentRef.update({matches: tmp});
+				this.props.navigation.state.params.onGoBack();
+				this.props.navigation.goBack();
             })
 		} else {
 			replace('CreateMatch', {error: true, email: email, tournament: tournament});

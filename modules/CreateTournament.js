@@ -16,34 +16,26 @@ export default class Login extends React.Component {
 	};
 
 	buttonClickListener = () => {
-		const {pop, replace} = this.props.navigation;
+		const {navigate, replace, pop} = this.props.navigation;
 		var rootRef = firebase.database().ref();
-    var userRef = rootRef.child("users");
-    var tournamentsRef = rootRef.child("tournaments");
+    	var userRef = rootRef.child("users");
+    	var tournamentsRef = rootRef.child("tournaments");
 		var {email, tournamentName, tournamentDate} = this.state;
 		var fbEmail = email.toLowerCase().replace('.',',');
 
 		if (tournamentName.length > 0 && tournamentDate.length > 0) {
             var res = tournamentsRef.push({name: tournamentName, date: tournamentDate, admin: fbEmail});
-						var tournamentId = res.path.substring(res.path.indexOf('-'));
-						userRef.child(fbEmail).child('tournaments').once('value').then(ss => {
-							var tmp = [];
-							if (ss.exists()) {
-								tmp = ss.val()
-							}
-							tmp.push(tournamentId);
-							userRef.child(fbEmail).update({tournaments: tmp});
-
-							tournamentsRef.once('value').then(tss => {
-								var tournaments = [];
-								if (tmp != null) {
-									tmp.forEach(id => {
-										tournaments.push({id: id, name: tss.child(id).val().name, date: tss.child(id).val().date, admin: tss.child(id).val().admin, matches: tss.child(id).val().matches})
-									})
-								}
-								replace('TournamentList', {email: email, tournaments: tournaments});
-							});
-						});
+			var tournamentId = res.path.substring(res.path.indexOf('-'));
+			userRef.child(fbEmail).child('tournaments').once('value').then(ss => {
+				var tmp = [];
+				if (ss.exists()) {
+					tmp = ss.val()
+				}
+				tmp.push(tournamentId);
+				userRef.child(fbEmail).update({tournaments: tmp});
+				this.props.navigation.state.params.onGoBack();
+				this.props.navigation.goBack();
+			});
 		} else {
 			replace('CreateTournament', {error: true, email: email});
 		}

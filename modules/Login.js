@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {hashCode, isValidInput} from './util.js';
 
 export default class Login extends React.Component {
 
@@ -31,7 +31,7 @@ export default class Login extends React.Component {
 			password = hashCode('test123');
 		}
 
-		if (email.length > 0) {
+		if (email.length > 0 && isValidInput(email.toLowerCase().replace('.',','))) {
 			userRef.child(email.toLowerCase().replace('.',',')).once('value').then(ss => {
 				if (!ss.exists() || ss.val().password != password) {
 					replace('Login', {error: true, fillEmail: email});

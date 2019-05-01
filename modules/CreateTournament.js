@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {isValidInput} from './util.js';
 
 export default class Login extends React.Component {
 
@@ -16,15 +16,16 @@ export default class Login extends React.Component {
 	};
 
 	buttonClickListener = () => {
-		const {navigate, replace, pop} = this.props.navigation;
+		const {replace} = this.props.navigation;
 		var rootRef = firebase.database().ref();
-    	var userRef = rootRef.child("users");
-    	var tournamentsRef = rootRef.child("tournaments");
+    var userRef = rootRef.child("users");
+    var tournamentsRef = rootRef.child("tournaments");
 		var {email, tournamentName, tournamentDate} = this.state;
 		var fbEmail = email.toLowerCase().replace('.',',');
 
-		if (tournamentName.length > 0 && tournamentDate.length > 0) {
-            var res = tournamentsRef.push({name: tournamentName, date: tournamentDate, admin: fbEmail});
+		if (tournamentName.length > 0 && tournamentDate.length > 0
+				&& isValidInput(tournamentName) && isValidInput(tournamentDate)) {
+      var res = tournamentsRef.push({name: tournamentName, date: tournamentDate, admin: fbEmail});
 			var tournamentId = res.path.substring(res.path.indexOf('-'));
 			userRef.child(fbEmail).child('tournaments').once('value').then(ss => {
 				var tmp = [];
@@ -37,14 +38,14 @@ export default class Login extends React.Component {
 				this.props.navigation.goBack();
 			});
 		} else {
-			replace('CreateTournament', {error: true, email: email});
+			replace('CreateTournament', {error: true, email: email, onGoBack: this.props.navigation.state.params.onGoBack});
 		}
 	}
 	
     render(){
 		let errorLabel;
 		if (this.props.navigation.state.params.error) {
-			errorLabel = <Text style={styles.errorLabels}>Please fill out all fields!</Text>;
+			errorLabel = <Text style={styles.errorLabels}>Please fill out all fields with valid input!</Text>;
 		} else {
 			errorLabel = <Text></Text>;
 		}

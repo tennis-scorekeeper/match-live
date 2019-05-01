@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Modal, TouchableHighlight } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {hashCode} from './util.js';
 
 export default class MatchList extends React.Component {
     constructor(props) {
@@ -34,7 +34,7 @@ export default class MatchList extends React.Component {
     }
 
     createMatchListener = () => {
-        const {replace, navigate} = this.props.navigation;
+        const {navigate} = this.props.navigation;
         navigate('CreateMatch', {
             email: this.state.email, 
             error: false, 

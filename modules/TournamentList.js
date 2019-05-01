@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {hashCode} from './util.js';
 
 export default class TournamentList extends React.Component {
     constructor(props) {

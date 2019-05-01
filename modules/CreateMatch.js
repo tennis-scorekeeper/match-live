@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Picker } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {isValidInput} from './util.js';
 
 export default class CreateMatch extends React.Component {
 
@@ -18,12 +18,16 @@ export default class CreateMatch extends React.Component {
 	};
 
 	buttonClickListener = () => {
-		const {pop, replace} = this.props.navigation;
+		const {replace} = this.props.navigation;
 		var rootRef = firebase.database().ref();
         var {email, tournament, date, p1name, p1from, p2name, p2from, 
             round, division, matchFormat, scoringFormat, referee} = this.state;
         var tournamentRef = rootRef.child("tournaments").child(tournament.id);
-		if (p1name.length > 0 && p2name.length > 0) {
+		if (p1name.length > 0 && p2name.length > 0
+			&& isValidInput(p1name) && isValidInput(p1from)
+			&& isValidInput(p2name) && isValidInput(p2from)
+			&& isValidInput(round) && isValidInput(division)
+			&& isValidInput(referee) && isValidInput(date)) {
             var newMatch = {date: date, p1name: p1name, p1from: p1from, p2name: p2name, 
                 p2from: p2from, round: round, division: division, matchFormat: matchFormat, 
                 scoringFormat: scoringFormat, referee: referee, done: false, score: ''};
@@ -38,14 +42,15 @@ export default class CreateMatch extends React.Component {
 				this.props.navigation.goBack();
             })
 		} else {
-			replace('CreateMatch', {error: true, email: email, tournament: tournament});
+			replace('CreateMatch', {error: true, email: email, 
+				tournament: tournament, onGoBack: this.props.navigation.state.params.onGoBack});
 		}
 	}
 	
     render(){
 		let errorLabel;
 		if (this.props.navigation.state.params.error) {
-			errorLabel = <Text style={styles.errorLabels}>Please fill out all fields!</Text>;
+			errorLabel = <Text style={styles.errorLabels}>Please use valid inputs and fill player names</Text>;
 		} else {
 			errorLabel = <Text></Text>;
 		}

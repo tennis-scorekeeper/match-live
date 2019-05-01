@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Button, ScrollView} from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {hashCode, isValidInput} from './util.js';
 
 export default class Register extends React.Component {
 
@@ -36,11 +36,12 @@ export default class Register extends React.Component {
 		var validPassword = true;
 
 		if (email.indexOf('#') != -1 || email.indexOf('$') != -1
-				|| email.indexOf('[') != -1 || email.indexOf(']') != -1 || email.indexOf('@') == -1) {
+				|| email.indexOf('[') != -1 || email.indexOf(']') != -1 
+				|| email.indexOf('@') == -1 || !isValidInput(email)) {
 			validEmail = false;
 		}
 
-		if (name == '' || name.indexOf(' ') == -1) {
+		if (name == '' || name.indexOf(' ') == -1 || !isValidInput(name)) {
 			validName = false;
 		}
 

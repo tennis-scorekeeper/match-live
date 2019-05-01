@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { StyleSheet, View, Text, ScrollView, TextInput, TouchableOpacity, Picker } from 'react-native';
 import firebase from 'react-native-firebase';
-import {hashCode} from './hash.js';
+import {isValidInput} from './util.js';
 
 export default class ManageUmpires extends React.Component {
 
@@ -47,12 +47,13 @@ export default class ManageUmpires extends React.Component {
                                 {email: email, 
                                     error: 'removed',
                                     modedUmpire: umpire,
+                                    onGoBack: this.props.navigation.state.params.onGoBack,
                                     tournament: {
-                                                id: tournament.id, name: tournament.name, 
-                                                    date: tournament.date, 
-                                                    admin: tournament.admin, 
-                                                    matches: tournament.matches, 
-                                                    umpires: tournamentUmpires}});
+                                        id: tournament.id, name: tournament.name, 
+                                        date: tournament.date, 
+                                        admin: tournament.admin, 
+                                        matches: tournament.matches, 
+                                        umpires: tournamentUmpires}});
             });
         })
     }
@@ -64,51 +65,66 @@ export default class ManageUmpires extends React.Component {
         var userRef = rootRef.child("users");
         var tournamentRef = rootRef.child("tournaments").child(tournament.id);
         newUmpire = newUmpire.toLowerCase().replace('.',',');
+        
+        if (!isValidInput(newUmpire)) {
+            replace('ManageUmpires', {email: email, error: 'invalidInput', modedUmpire: newUmpire, 
+                tournament: tournament, onGoBack: this.props.navigation.state.params.onGoBack});
+        } else {
+            userRef.child(newUmpire).once('value').then(ss => {
+                if (!ss.exists() || newUmpire == '') {
+                    replace('ManageUmpires', {email: email, error: 'noUser', modedUmpire: newUmpire, 
+                        tournament: tournament, onGoBack: this.props.navigation.state.params.onGoBack});
+                } else if (newUmpire == tournament.admin.toLowerCase().replace('.',',')) {
+                    replace('ManageUmpires', {email: email, error: 'alreadyAdded', modedUmpire: newUmpire, 
+                        tournament: tournament, onGoBack: this.props.navigation.state.params.onGoBack});
+                } else {
 
-        userRef.child(newUmpire).once('value').then(ss => {
-            if (!ss.exists()) {
-                replace('ManageUmpires', {email: email, error: 'noUser', modedUmpire: newUmpire, tournament: tournament});
-            } else {
-                tournamentRef.child('umpires').once('value').then(tUmpires => {
-                    var tumps = [];
-                    if (tUmpires.exists()) {
-                        tumps = tUmpires.val();
-                    }
-                    var alreadyAdded = false;
-                    tumps.forEach(existingUmpire => {
-                        if (existingUmpire == newUmpire) {
-                            replace('ManageUmpires', {email: email, error: 'alreadyAdded', modedUmpire: newUmpire, tournament: tournament});
-                            alreadyAdded = true;
+                    tournamentRef.child('umpires').once('value').then(tUmpires => {
+                        var tumps = [];
+                        if (tUmpires.exists()) {
+                            tumps = tUmpires.val();
                         }
-                    });
-                    if (!alreadyAdded) {
-                        tumps.push(newUmpire);
-                        tournamentRef.update({umpires: tumps});
+                        var alreadyAdded = false;
+                        tumps.forEach(existingUmpire => {
+                            if (existingUmpire == newUmpire) {
+                                replace('ManageUmpires', {email: email, error: 'alreadyAdded', modedUmpire: newUmpire, 
+                                    tournament: tournament, onGoBack: this.props.navigation.state.params.onGoBack});
+                                alreadyAdded = true;
+                            }
+                        });
+                        if (!alreadyAdded) {
+                            tumps.push(newUmpire);
+                            tournamentRef.update({umpires: tumps});
 
-                        var tmp = [];
-                        if (ss.child('tournaments').exists()) {
-                            tmp = ss.child('tournaments').val();
-                        };
-                        tmp.push(tournament.id);
-                        userRef.child(newUmpire).update({tournaments: tmp});
+                            var tmp = [];
+                            if (ss.child('tournaments').exists()) {
+                                tmp = ss.child('tournaments').val();
+                            };
+                            tmp.push(tournament.id);
+                            userRef.child(newUmpire).update({tournaments: tmp});
 
-                        tournamentRef.once('value').then(tss => {
-                            this.props.navigation.state.params.onGoBack();
-                            replace('ManageUmpires', 
-                                {email: email, 
-                                    error: 'success',
-                                    modedUmpire: newUmpire,
-                                    tournament: {
-                                                id: tournament.id, name: tournament.name, 
-                                                    date: tournament.date, 
-                                                    admin: tournament.admin, 
-                                                    matches: tournament.matches, 
-                                                    umpires: tss.val().umpires}});
-                        })
-                    }
-                })
-            }
-        });
+                            tournamentRef.once('value').then(tss => {
+                                this.props.navigation.state.params.onGoBack();
+                                replace('ManageUmpires', 
+                                    {email: email, 
+                                        error: 'success',
+                                        modedUmpire: newUmpire,
+                                        onGoBack: this.props.navigation.state.params.onGoBack,
+                                        tournament: {
+                                            id: tournament.id, name: tournament.name, 
+                                            date: tournament.date, 
+                                            admin: tournament.admin, 
+                                            matches: tournament.matches, 
+                                            umpires: tss.val().umpires
+                                        }
+                                    }
+                                );
+                            })
+                        }
+                    })
+                }
+            });
+        }
 	}
 	
     render(){
@@ -123,6 +139,8 @@ export default class ManageUmpires extends React.Component {
 			errorLabel = <Text style={styles.successLabels}>Umpire: {modedUmpire.replace(',','.')} added!</Text>;
         } else if (error == 'removed') {
 			errorLabel = <Text style={styles.errorLabels}>Umpire: {modedUmpire.replace(',','.')} removed!</Text>;
+        } else if (error == 'invalidInput') {
+            errorLabel = <Text style={styles.errorLabels}>Invalid input!</Text>;
         }
         
         var umpires = [];

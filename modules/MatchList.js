@@ -56,8 +56,15 @@ export default class MatchList extends React.Component {
     });
   };
 
-  selectMatch(m) {
-    console.log(m);
+  selectMatch(m, matchIndex) {
+    const { navigate } = this.props.navigation;
+    navigate("Prematch", {
+      email: this.state.email,
+      error: false,
+      match: m,
+      matchIndex: matchIndex,
+      onGoBack: () => this.refresh()
+    });
   }
 
   manageUmpires = () => {
@@ -77,7 +84,7 @@ export default class MatchList extends React.Component {
       for (var i = 0; i < tournament.matches.length; i++) {
         var m = tournament.matches[i];
         disp.push(
-          <TouchableOpacity key={i} onPress={() => this.selectMatch(m)}>
+          <TouchableOpacity key={i} onPress={() => this.selectMatch(m, i)}>
             <Text style={styles.listing}>
               {m.p1name} vs. {m.p2name}
             </Text>

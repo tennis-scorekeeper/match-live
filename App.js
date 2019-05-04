@@ -10,6 +10,7 @@ import CreateTournament from './modules/CreateTournament.js';
 import MatchList from './modules/MatchList.js';
 import CreateMatch from './modules/CreateMatch.js';
 import ManageUmpires from './modules/ManageUmpires.js';
+import Prematch from './modules/Prematch.js';
 
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 
@@ -22,6 +23,7 @@ const MainNavigator = createStackNavigator({
   MatchList: {screen: MatchList},
   CreateMatch: {screen: CreateMatch},
   ManageUmpires: {screen: ManageUmpires},
+  Prematch: {screen: Prematch},
 });
 
 const App = createAppContainer(MainNavigator);

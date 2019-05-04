@@ -11,6 +11,7 @@ import MatchList from './modules/MatchList.js';
 import CreateMatch from './modules/CreateMatch.js';
 import ManageUmpires from './modules/ManageUmpires.js';
 import Prematch from './modules/Prematch.js';
+import MatchInterface from './modules/MatchInterface.js';
 
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 
@@ -24,6 +25,7 @@ const MainNavigator = createStackNavigator({
   CreateMatch: {screen: CreateMatch},
   ManageUmpires: {screen: ManageUmpires},
   Prematch: {screen: Prematch},
+  MatchInterface: {screen: MatchInterface},
 });
 
 const App = createAppContainer(MainNavigator);

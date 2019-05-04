@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import firebase from "react-native-firebase";
 import { isValidInput } from "./util.js";
+import Match from "./Model/Match.js";
 
 export default class CreateMatch extends React.Component {
   constructor(props) {
@@ -32,9 +33,8 @@ export default class CreateMatch extends React.Component {
     title: "Match Setup"
   };
 
-  buttonClickListener = () => {
-    const { replace } = this.props.navigation;
-    var rootRef = firebase.database().ref();
+  startMatch = () => {
+    const { replace, navigate } = this.props.navigation;
     var {
       email,
       match,
@@ -43,23 +43,75 @@ export default class CreateMatch extends React.Component {
       tossWinner,
       tossChoice,
       leftOfChair,
-      rightOfChair
+      rightOfChair,
+      chairUmpire
     } = this.state;
 
-    if (leftOfChair == rightOfChair) {
-      replace('Prematch', this.state);
+    if (!isValidInput(courtNumber) || !isValidInput(chairUmpire)) {
+      this.setState({ error: 'invalidInput' });
+      replace("Prematch", {
+        email: email,
+        match: match,
+        matchIndex: matchIndex,
+        error: "invalidInput",
+        onGoBack: () => this.refresh()
+      });
     }
+    if (leftOfChair == rightOfChair) {
+      replace("Prematch", {
+        email: email,
+        match: match,
+        matchIndex: matchIndex,
+        error: "sameLeftAndRight",
+        onGoBack: () => this.refresh()
+      });
+    }
+
+    var p1serve = true;
+    var p1left = true;
+    var ads = match.scoringFormat == '1';
+
+    if (tossWinner == match.p1name) {
+      if (tossChoice == 'receive') {
+        p1serve = false;
+      }
+    } else {
+      if (tossChoice == 'serve') {
+        p1serve = false;
+      }
+    }
+
+    if (leftOfChair == match.p2name) {
+      p1left = false;
+    }
+
+    navigate("MatchInterface", {
+      email: email,
+      matchIndex: matchIndex,
+      p1serve: p1serve,
+      p1left: p1left,
+      ads: ads,
+      matchFormat: parseInt(match.matchFormat),
+    });
+
 
   };
 
   render() {
     let errorLabel;
     const { match } = this.state;
-    const { error, modedUmpire } = this.props.navigation.state.params;
-    if (error) {
+    const { error } = this.props.navigation.state.params;
+    console.log(error);
+    if (error == 'sameLeftAndRight') {
       errorLabel = (
         <Text style={styles.errorLabels}>
-          Please use valid inputs and fill player names
+          The left and right of the chair cannot be the same.
+        </Text>
+      );
+    } else if (error == 'invalidInput') {
+      errorLabel = (
+        <Text style={styles.errorLabels}>
+          Invalid input!
         </Text>
       );
     } else {
@@ -142,7 +194,7 @@ export default class CreateMatch extends React.Component {
         </View>
         <View style={styles.subView}>
           <TouchableOpacity
-            onPress={this.buttonClickListener}
+            onPress={this.startMatch}
             style={styles.buttons}
           >
             <Text style={styles.buttonText}>Start Match</Text>
@@ -154,7 +206,9 @@ export default class CreateMatch extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  mainView: {},
+  mainView: {
+    marginTop: 20,
+  },
   subView: {
     alignItems: "center",
     marginBottom: 20,

@@ -14,7 +14,6 @@ export default class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = { email: "", password: "" };
-    console.log(this.props.navigation.state.params);
     if (this.props.navigation.state.params.error) {
       this.state.email = this.props.navigation.state.params.fillEmail;
     }

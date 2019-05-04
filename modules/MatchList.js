@@ -60,7 +60,6 @@ export default class MatchList extends React.Component {
     const { navigate } = this.props.navigation;
     navigate("Prematch", {
       email: this.state.email,
-      error: false,
       match: m,
       matchIndex: matchIndex,
       onGoBack: () => this.refresh()

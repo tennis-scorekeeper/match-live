@@ -15,7 +15,7 @@ import Match from "./Model/Match.js";
 export default class CreateMatch extends React.Component {
   constructor(props) {
     super(props);
-    var tmp = this.props.navigation.state.params.match
+    var tmp = this.props.navigation.state.params.match;
     this.state = {
       email: this.props.navigation.state.params.email,
       match: tmp,
@@ -25,7 +25,7 @@ export default class CreateMatch extends React.Component {
       tossChoice: "Serve",
       leftOfChair: tmp.p1name,
       rightOfChair: tmp.p2name,
-      chairUmpire: "",
+      chairUmpire: ""
     };
   }
 
@@ -48,7 +48,7 @@ export default class CreateMatch extends React.Component {
     } = this.state;
 
     if (!isValidInput(courtNumber) || !isValidInput(chairUmpire)) {
-      this.setState({ error: 'invalidInput' });
+      this.setState({ error: "invalidInput" });
       replace("Prematch", {
         email: email,
         match: match,
@@ -56,8 +56,7 @@ export default class CreateMatch extends React.Component {
         error: "invalidInput",
         onGoBack: () => this.refresh()
       });
-    }
-    if (leftOfChair == rightOfChair) {
+    } else if (leftOfChair == rightOfChair) {
       replace("Prematch", {
         email: email,
         match: match,
@@ -65,37 +64,35 @@ export default class CreateMatch extends React.Component {
         error: "sameLeftAndRight",
         onGoBack: () => this.refresh()
       });
-    }
-
-    var p1serve = true;
-    var p1left = true;
-    var ads = match.scoringFormat == '1';
-
-    if (tossWinner == match.p1name) {
-      if (tossChoice == 'receive') {
-        p1serve = false;
-      }
     } else {
-      if (tossChoice == 'serve') {
-        p1serve = false;
+      var p1serve = true;
+      var p1left = true;
+      var ads = match.scoringFormat == "1";
+
+      if (tossWinner == match.p1name) {
+        if (tossChoice == "receive") {
+          p1serve = false;
+        }
+      } else {
+        if (tossChoice == "serve") {
+          p1serve = false;
+        }
       }
+
+      if (leftOfChair == match.p2name) {
+        p1left = false;
+      }
+
+      navigate("MatchInterface", {
+        email: email,
+        match: match,
+        matchIndex: matchIndex,
+        p1serve: p1serve,
+        p1left: p1left,
+        ads: ads,
+        matchFormat: parseInt(match.matchFormat)
+      });
     }
-
-    if (leftOfChair == match.p2name) {
-      p1left = false;
-    }
-
-    navigate("MatchInterface", {
-      email: email,
-      match: match,
-      matchIndex: matchIndex,
-      p1serve: p1serve,
-      p1left: p1left,
-      ads: ads,
-      matchFormat: parseInt(match.matchFormat),
-    });
-
-
   };
 
   render() {
@@ -103,18 +100,14 @@ export default class CreateMatch extends React.Component {
     const { match } = this.state;
     const { error } = this.props.navigation.state.params;
     console.log(error);
-    if (error == 'sameLeftAndRight') {
+    if (error == "sameLeftAndRight") {
       errorLabel = (
         <Text style={styles.errorLabels}>
           The left and right of the chair cannot be the same.
         </Text>
       );
-    } else if (error == 'invalidInput') {
-      errorLabel = (
-        <Text style={styles.errorLabels}>
-          Invalid input!
-        </Text>
-      );
+    } else if (error == "invalidInput") {
+      errorLabel = <Text style={styles.errorLabels}>Invalid input!</Text>;
     } else {
       errorLabel = <Text />;
     }
@@ -194,10 +187,7 @@ export default class CreateMatch extends React.Component {
           </View>
         </View>
         <View style={styles.subView}>
-          <TouchableOpacity
-            onPress={this.startMatch}
-            style={styles.buttons}
-          >
+          <TouchableOpacity onPress={this.startMatch} style={styles.buttons}>
             <Text style={styles.buttonText}>Start Match</Text>
           </TouchableOpacity>
         </View>
@@ -208,7 +198,7 @@ export default class CreateMatch extends React.Component {
 
 const styles = StyleSheet.create({
   mainView: {
-    marginTop: 20,
+    marginTop: 20
   },
   subView: {
     alignItems: "center",

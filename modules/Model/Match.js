@@ -40,7 +40,7 @@ export default class Match {
       if (tiebreakPoints == 0) {
         return playerOneServing;
       } else {
-        var temp = (tiebreakPoints - 1) / 2;
+        var temp = Math.floor((tiebreakPoints - 1) / 2);
         if (temp % 2 == 1) {
           return playerOneServing;
         } else {
@@ -59,13 +59,14 @@ export default class Match {
     if (totalGames == 0) {
       return this.playerOneStartedLeft;
     }
-    if (((totalGames - 1) / 2) % 2 == 0) {
+
+    if (Math.floor((totalGames - 1) / 2) % 2 == 0) {
       playerOneLeftSide = !playerOneLeftSide;
     }
 
     if (this.currentMatchState.inTieBreak()) {
       var tiebreakPoints = this.currentMatchState.getCurrentGameTotalScore();
-      if ((tiebreakPoints / 6) % 2 == 1) {
+      if (Math.floor(tiebreakPoints / 6) % 2 == 1) {
         playerOneLeftSide = !playerOneLeftSide;
       }
     }

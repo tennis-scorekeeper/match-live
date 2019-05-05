@@ -1,9 +1,25 @@
 import Set from "./Set.js";
 
 export default class MatchState {
-  constructor(ads, isEightGameProSet, matchTiebreakSet, oldState) {
-    if (oldState == null) {
-      this.currentSet = new Set(ads, isEightGameProSet, matchTiebreakSet, null);
+  constructor(
+    ads,
+    isEightGameProSet,
+    matchTiebreakSet,
+    oldState,
+    restore,
+    setScores,
+    matchFormat
+  ) {
+    if (oldState == null && !restore) {
+      this.currentSet = new Set(
+        ads,
+        isEightGameProSet,
+        false,
+        null,
+        false,
+        0,
+        0
+      );
       this.completedSets = [];
 
       this.playerOneAces = 0;
@@ -28,11 +44,80 @@ export default class MatchState {
 
       this.playerOneForfeit = false;
       this.playerTwoForfeit = false;
+    } else if (restore) {
+      this.completedSets = [];
+      var i = 0;
+      for (i = 0; i < setScores.length - 2; i += 2) {
+        this.completedSets.push(
+          new Set(
+            ads,
+            isEightGameProSet,
+            false,
+            null,
+            true,
+            setScores[i],
+            setScores[i + 1]
+          )
+        );
+      }
+      if (matchFormat == 2 && this.completedSets.length == 2) {
+        this.currentSet = new Set(
+          ads,
+          isEightGameProSet,
+          true,
+          null,
+          true,
+          setScores[setScores.length - 2],
+          setScores[setScores.length - 1]
+        );
+      } else {
+        this.currentSet = new Set(
+          ads,
+          isEightGameProSet,
+          false,
+          null,
+          true,
+          setScores[setScores.length - 2],
+          setScores[setScores.length - 1]
+        );
+      }
+      this.playerOneAces = 0;
+      this.playerTwoAces = 0;
+
+      this.playerOneFaults = 0;
+      this.playerOneDoubleFaults = 0;
+      this.playerTwoFaults = 0;
+      this.playerTwoDoubleFaults = 0;
+
+      this.playerOneTimeViolations = 0;
+      this.playerTwoTimeViolations = 0;
+
+      this.playerOneCodeViolations = [];
+      this.playerTwoCodeViolations = [];
+
+      this.faulted = false;
+      this.adRule = ads;
+
+      this.eightGameProSet = isEightGameProSet;
+      this.hasMatchTiebreakSet = matchTiebreakSet;
+
+      this.playerOneForfeit = false;
+      this.playerTwoForfeit = false;
     } else {
-      this.currentSet = new Set(false, false, false, oldState.currentSet);
+      this.currentSet = new Set(
+        false,
+        false,
+        false,
+        oldState.currentSet,
+        false,
+        0,
+        0
+      );
       this.completedSets = [];
       oldState.completedSets.forEach(completedSet => {
-        this.completedSets.push(new Set(false, false, false, completedSet));
+        this.completedSets.push(
+          new Set(false, false, false, completedSet, false, 0, 0)
+        );
       });
 
       this.playerOneAces = oldState.playerOneAces;
@@ -66,8 +151,15 @@ export default class MatchState {
     }
   }
   incrementPlayerOneScore() {
-    var nextMatchState = new MatchState(false, false, false, this);
-    //console.log(nextMatchState);
+    var nextMatchState = new MatchState(
+      false,
+      false,
+      false,
+      this,
+      false,
+      null,
+      null
+    );
     var wonGame = nextMatchState.currentSet.incrementPlayerOneGameScore();
     if (wonGame) {
       var wonSet = nextMatchState.currentSet.incrementPlayerOneScore();
@@ -84,7 +176,10 @@ export default class MatchState {
           this.adRule,
           this.eightGameProSet,
           nextSetMatchTiebreak,
-          null
+          null,
+          false,
+          0,
+          0
         );
       }
     }
@@ -92,7 +187,15 @@ export default class MatchState {
   }
 
   incrementPlayerTwoScore() {
-    var nextMatchState = new MatchState(false, false, false, this);
+    var nextMatchState = new MatchState(
+      false,
+      false,
+      false,
+      this,
+      false,
+      null,
+      null
+    );
     var wonGame = nextMatchState.currentSet.incrementPlayerTwoGameScore();
     if (wonGame) {
       var wonSet = nextMatchState.currentSet.incrementPlayerTwoScore();
@@ -109,7 +212,10 @@ export default class MatchState {
           this.adRule,
           this.eightGameProSet,
           nextSetMatchTiebreak,
-          null
+          null,
+          false,
+          0,
+          0
         );
       }
     }
@@ -134,7 +240,15 @@ export default class MatchState {
       nextMatchState.playerOneDoubleFaults += 1;
       return nextMatchState;
     } else {
-      var nextMatchState = new MatchState(false, false, false, this);
+      var nextMatchState = new MatchState(
+        false,
+        false,
+        false,
+        this,
+        false,
+        null,
+        null
+      );
       nextMatchState.faulted = true;
       nextMatchState.playerOneFaults += 1;
       return nextMatchState;
@@ -147,7 +261,15 @@ export default class MatchState {
       nextMatchState.playerTwoDoubleFaults += 1;
       return nextMatchState;
     } else {
-      var nextMatchState = new MatchState(false, false, false, this);
+      var nextMatchState = new MatchState(
+        false,
+        false,
+        false,
+        this,
+        false,
+        null,
+        null
+      );
       nextMatchState.faulted = true;
       nextMatchState.playerTwoFaults += 1;
       return nextMatchState;
@@ -159,7 +281,15 @@ export default class MatchState {
       nextMatchState.playerOneTimeViolations += 1;
       return nextMatchState;
     } else {
-      var nextMatchState = new MatchState(false, false, false, this);
+      var nextMatchState = new MatchState(
+        false,
+        false,
+        false,
+        this,
+        false,
+        null,
+        null
+      );
       nextMatchState.playerOneTimeViolations += 1;
       return nextMatchState;
     }
@@ -171,7 +301,15 @@ export default class MatchState {
       nextMatchState.playerTwoTimeViolations += 1;
       return nextMatchState;
     } else {
-      var nextMatchState = new MatchState(false, false, false, this);
+      var nextMatchState = new MatchState(
+        false,
+        false,
+        false,
+        this,
+        false,
+        null,
+        null
+      );
       nextMatchState.playerTwoTimeViolations += 1;
       return nextMatchState;
     }
@@ -288,12 +426,8 @@ export default class MatchState {
 
     this.completedSets.forEach(completedSet => {
       if (completedSet.isMatchTiebreakSet()) {
-        result.push(
-          parseInt(completedSet.getCurrentGamePlayerOneScore())
-        );
-        result.push(
-          parseInt(completedSet.getCurrentGamePlayerTwoScore())
-        );
+        result.push(parseInt(completedSet.getCurrentGamePlayerOneScore()));
+        result.push(parseInt(completedSet.getCurrentGamePlayerTwoScore()));
       } else {
         result.push(parseInt(completedSet.getPlayerOneScore()));
         result.push(parseInt(completedSet.getPlayerTwoScore()));

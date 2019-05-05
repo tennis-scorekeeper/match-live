@@ -18,8 +18,8 @@ export default class CreateMatch extends React.Component {
     var tmp = this.props.navigation.state.params.match;
     this.state = {
       email: this.props.navigation.state.params.email,
+      tournamentId: this.props.navigation.state.params.tournamentId,
       match: tmp,
-      matchIndex: this.props.navigation.state.params.matchIndex,
       courtNumber: "",
       tossWinner: tmp.p1name,
       tossChoice: "Serve",
@@ -37,8 +37,8 @@ export default class CreateMatch extends React.Component {
     const { replace, navigate } = this.props.navigation;
     var {
       email,
+      tournamentId,
       match,
-      matchIndex,
       courtNumber,
       tossWinner,
       tossChoice,
@@ -51,16 +51,16 @@ export default class CreateMatch extends React.Component {
       this.setState({ error: "invalidInput" });
       replace("Prematch", {
         email: email,
+        tournamentId: tournamentId,
         match: match,
-        matchIndex: matchIndex,
         error: "invalidInput",
         onGoBack: () => this.refresh()
       });
     } else if (leftOfChair == rightOfChair) {
       replace("Prematch", {
         email: email,
+        tournamentId: tournamentId,
         match: match,
-        matchIndex: matchIndex,
         error: "sameLeftAndRight",
         onGoBack: () => this.refresh()
       });
@@ -85,8 +85,8 @@ export default class CreateMatch extends React.Component {
 
       navigate("MatchInterface", {
         email: email,
+        tournamentId: tournamentId,
         match: match,
-        matchIndex: matchIndex,
         p1serve: p1serve,
         p1left: p1left,
         ads: ads,

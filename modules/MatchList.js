@@ -56,12 +56,12 @@ export default class MatchList extends React.Component {
     });
   };
 
-  selectMatch(m, matchIndex) {
+  selectMatch(m) {
     const { navigate } = this.props.navigation;
     navigate("Prematch", {
       email: this.state.email,
+      tournamentId: this.state.tournament.id,
       match: m,
-      matchIndex: matchIndex,
       onGoBack: () => this.refresh()
     });
   }
@@ -82,8 +82,9 @@ export default class MatchList extends React.Component {
     if (tournament.matches != null) {
       var i = 0;
       tournament.matches.forEach(m => {
+        m.id = i;
         disp.push(
-          <TouchableOpacity key={i} onPress={() => this.selectMatch(m, i)}>
+          <TouchableOpacity key={i} onPress={() => this.selectMatch(m)}>
             <Text style={styles.listing}>
               {m.p1name} vs. {m.p2name}
             </Text>

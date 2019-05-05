@@ -75,8 +75,10 @@ export default class CreateMatch extends React.Component {
         matchFormat: matchFormat,
         scoringFormat: scoringFormat,
         referee: referee,
+        started: false,
         done: false,
-        score: ""
+        setScores: "",
+        gameScore: "",
       };
       tournamentRef
         .child("matches")

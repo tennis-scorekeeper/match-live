@@ -1,18 +1,38 @@
 import MatchState from "./MatchState";
 
 export default class Match {
-  constructor(p1serve, p1left, ads, matchFormatIndex) {
-    this.currentMatchState = new MatchState(
-      ads,
-      matchFormatIndex == 3,
-      matchFormatIndex == 2,
-      null
-    );
-    this.pastMatchStates = [];
+  constructor(p1serve, p1left, ads, matchFormatIndex, restore, setScores) {
+    if (restore) {
+      this.currentMatchState = new MatchState(
+        ads,
+        matchFormatIndex == 3,
+        matchFormatIndex == 2,
+        null,
+        true,
+        setScores,
+        matchFormatIndex
+      );
+      this.pastMatchStates = [];
 
-    this.playerOneServedFirst = p1serve;
-    this.playerOneStartedLeft = p1left;
-    this.matchFormat = matchFormatIndex;
+      this.playerOneServedFirst = p1serve;
+      this.playerOneStartedLeft = p1left;
+      this.matchFormat = matchFormatIndex;
+    } else {
+      this.currentMatchState = new MatchState(
+        ads,
+        matchFormatIndex == 3,
+        matchFormatIndex == 2,
+        null,
+        false,
+        null,
+        null
+      );
+      this.pastMatchStates = [];
+
+      this.playerOneServedFirst = p1serve;
+      this.playerOneStartedLeft = p1left;
+      this.matchFormat = matchFormatIndex;
+    }
   }
   checkInTiebreak() {
     return this.currentMatchState.inTieBreak();
@@ -110,7 +130,6 @@ export default class Match {
       }
       i--;
     }
-
     var result = "";
 
     history.forEach(matchState => {
@@ -118,7 +137,7 @@ export default class Match {
         matchState.getCurrentSetPlayerOneScore() +
         "-" +
         matchState.getCurrentSetPlayerTwoScore();
-      result += " (" + matchState.getGameHistoryScoreDisplay() + ") ";
+      result += " (" + matchState.getGameHistoryScoreDisplay() + ")\n";
     });
 
     return result;
@@ -198,7 +217,10 @@ export default class Match {
         false,
         false,
         false,
-        currentMatchState
+        currentMatchState,
+        false,
+        null,
+        null
       );
       if (this.checkPlayerOneServing()) {
         nextMatchState.playerOneSubtractFault();

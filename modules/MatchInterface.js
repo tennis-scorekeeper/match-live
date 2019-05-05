@@ -4,9 +4,7 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Picker
+  TouchableOpacity
 } from "react-native";
 import firebase from "react-native-firebase";
 import { isValidInput } from "./util.js";
@@ -17,39 +15,131 @@ export default class MatchInterface extends React.Component {
     super(props);
     this.state = {
       email: this.props.navigation.state.params.email,
-      match: this.props.navigation.state.params.match,
-      matchIndex: this.props.navigation.state.params.matchIndex
+      tournamentId: this.props.navigation.state.params.tournamentId,
+      match: this.props.navigation.state.params.match
     };
     this.match = new Match(
       this.props.navigation.state.params.p1serve,
       this.props.navigation.state.params.p1left,
       this.props.navigation.state.params.ads,
-      this.props.navigation.state.params.matchFormat
+      this.props.navigation.state.params.matchFormat,
+      false,
+      null,
+      null
     );
+  }
+
+  componentDidMount() {
+    var matchRef = firebase
+      .database()
+      .ref()
+      .child("tournaments")
+      .child(this.state.tournamentId)
+      .child("matches")
+      .child(this.state.match.id);
+
+    matchRef.once("value").then(mss => {
+      if (mss.val().started) {
+        this.match = new Match(
+          mss.val().p1ServedFirst,
+          mss.val().p1StartedLeft,
+          this.props.navigation.state.params.ads,
+          this.props.navigation.state.params.matchFormat,
+          true,
+          mss.val().setScores
+        );
+        var p1GameScore = mss.val().gameScore[0];
+        var p2GameScore = mss.val().gameScore[1];
+        while (p1GameScore > 0 && p2GameScore > 0) {
+          this.match.incrementPlayerOneScore();
+          this.match.incrementPlayerTwoScore();
+          p1GameScore--;
+          p2GameScore--;
+        }
+        while (p1GameScore > 0) {
+          this.match.incrementPlayerOneScore();
+          p1GameScore--;
+        }
+        while (p2GameScore > 0) {
+          this.match.incrementPlayerTwoScore();
+          p2GameScore--;
+        }
+        this.forceUpdate();
+      } else {
+        matchRef.update({
+          started: true,
+          p1ServedFirst: this.props.navigation.state.params.p1serve,
+          p1StartedLeft: this.props.navigation.state.params.p1left
+        });
+      }
+    });
   }
 
   static navigationOptions = {
     title: "Match Interface"
   };
 
+  updatePage() {
+    var matchRef = firebase
+      .database()
+      .ref()
+      .child("tournaments")
+      .child(this.state.tournamentId)
+      .child("matches")
+      .child(this.state.match.id);
+    matchRef.update({
+      setScores: this.match.getSetScores(),
+      gameScore: [
+        this.match.getCurrentGamePlayerOneScore(),
+        this.match.getCurrentGamePlayerTwoScore()
+      ]
+    });
+    this.forceUpdate();
+  }
+
   playerOneScore = () => {
     this.match.incrementPlayerOneScore();
-    this.forceUpdate();
+    this.updatePage();
   };
 
   playerTwoScore = () => {
     this.match.incrementPlayerTwoScore();
-    this.forceUpdate();
+    this.updatePage();
   };
 
   undo = () => {
     this.match.undo();
-    this.forceUpdate();
+    this.updatePage();
   };
 
   render() {
     var p1name = this.state.match.p1name;
     var p2name = this.state.match.p2name;
+
+    var p1GameScore = this.match.getCurrentGamePlayerOneScore();
+    var p2GameScore = this.match.getCurrentGamePlayerTwoScore();
+    if (!this.match.checkInTiebreak() && p1GameScore == 4 && p2GameScore == 3) {
+      gameScore = (
+        <Text style={styles.gameScore}>
+          {this.match.getCurrentGameScore() + "-" + p1name}
+        </Text>
+      );
+    } else if (
+      !this.match.checkInTiebreak() &&
+      p1GameScore == 3 &&
+      p2GameScore == 4
+    ) {
+      gameScore = (
+        <Text style={styles.gameScore}>
+          {this.match.getCurrentGameScore() + "-" + p2name}
+        </Text>
+      );
+    } else {
+      gameScore = (
+        <Text style={styles.gameScore}>{this.match.getCurrentGameScore()}</Text>
+      );
+    }
+
     let scoreButtons;
     if (this.match.checkPlayerOneLeftSide()) {
       scoreButtons = (
@@ -94,14 +184,13 @@ export default class MatchInterface extends React.Component {
         </View>
       );
     }
+
     if (this.match.checkPlayerOneServing()) {
       p1name += "*";
     } else {
       p2name += "*";
     }
-    gameScore = (
-      <Text style={styles.gameScore}>{this.match.getCurrentGameScore()}</Text>
-    );
+
     var setScores = this.match.getSetScores();
     while (setScores.length < 10) {
       setScores.push(null);
@@ -157,6 +246,9 @@ export default class MatchInterface extends React.Component {
           {p2SetScoresDisplays}
         </View>
         <View style={styles.gameScoreView}>{gameScore}</View>
+        <View style={styles.gameHistoryView}>
+          <Text>{this.match.getGameHistory()}</Text>
+        </View>
         {scoreButtons}
       </ScrollView>
     );
@@ -164,7 +256,9 @@ export default class MatchInterface extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  mainView: {},
+  mainView: {
+    flex: 1
+  },
   buttonRow: {
     flex: 1,
     flexDirection: "row",
@@ -251,6 +345,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "black",
     fontSize: 48
+  },
+  gameHistoryView: {
+    alignItems: "center",
+    margin: 20,
+    height: 100
   },
   scoreButtonRow: {
     flex: 1,

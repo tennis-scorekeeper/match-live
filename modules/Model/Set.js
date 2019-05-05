@@ -1,10 +1,28 @@
 import Game from "./Game.js";
 
 export default class Set {
-  constructor(ads, isEightGame, isMatchTiebreakSet, set) {
-    if (set == null) {
+  constructor(
+    ads,
+    isEightGame,
+    isMatchTiebreakSet,
+    set,
+    done,
+    p1Score,
+    p2Score
+  ) {
+    if (set == null && !done) {
       this.playerOneScore = 0;
       this.playerTwoScore = 0;
+
+      this.currentGame = new Game(isMatchTiebreakSet, 10, ads, null);
+      this.completedGames = [];
+
+      this.adRule = ads;
+      this.eightGameProSet = isEightGame;
+      this.matchTiebreakSet = isMatchTiebreakSet;
+    } else if (done) {
+      this.playerOneScore = p1Score;
+      this.playerTwoScore = p2Score;
 
       this.currentGame = new Game(isMatchTiebreakSet, 10, ads, null);
       this.completedGames = [];
@@ -49,13 +67,19 @@ export default class Set {
         gamesNeeded = 8;
       }
 
-      if (this.playerOneScore == gamesNeeded && this.playerTwoScore == gamesNeeded) {
+      if (
+        this.playerOneScore == gamesNeeded &&
+        this.playerTwoScore == gamesNeeded
+      ) {
         this.currentGame = new Game(true, 7, this.adRule, null);
       } else {
         this.currentGame = new Game(false, 0, this.adRule, null);
       }
 
-      if (this.playerOneScore == gamesNeeded && this.playerTwoScore <= gamesNeeded - 2) {
+      if (
+        this.playerOneScore == gamesNeeded &&
+        this.playerTwoScore <= gamesNeeded - 2
+      ) {
         return true;
       }
       if (this.playerOneScore == gamesNeeded + 1) {
@@ -79,13 +103,19 @@ export default class Set {
         gamesNeeded = 8;
       }
 
-      if (this.playerOneScore == gamesNeeded && this.playerTwoScore == gamesNeeded) {
+      if (
+        this.playerOneScore == gamesNeeded &&
+        this.playerTwoScore == gamesNeeded
+      ) {
         this.currentGame = new Game(true, 7, this.adRule, null);
       } else {
         this.currentGame = new Game(false, 0, this.adRule, null);
       }
 
-      if (this.playerTwoScore == gamesNeeded && this.playerOneScore <= gamesNeeded - 2) {
+      if (
+        this.playerTwoScore == gamesNeeded &&
+        this.playerOneScore <= gamesNeeded - 2
+      ) {
         return true;
       }
       if (this.playerTwoScore == gamesNeeded + 1) {

@@ -80,8 +80,8 @@ export default class MatchList extends React.Component {
     const { email, tournament } = this.state;
     var disp = [];
     if (tournament.matches != null) {
-      for (var i = 0; i < tournament.matches.length; i++) {
-        var m = tournament.matches[i];
+      var i = 0;
+      tournament.matches.forEach(m => {
         disp.push(
           <TouchableOpacity key={i} onPress={() => this.selectMatch(m, i)}>
             <Text style={styles.listing}>
@@ -89,7 +89,8 @@ export default class MatchList extends React.Component {
             </Text>
           </TouchableOpacity>
         );
-      }
+        i++;
+      });
     }
 
     let addUmpire = null;

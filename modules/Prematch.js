@@ -99,7 +99,6 @@ export default class CreateMatch extends React.Component {
     let errorLabel;
     const { match } = this.state;
     const { error } = this.props.navigation.state.params;
-    console.log(error);
     if (error == "sameLeftAndRight") {
       errorLabel = (
         <Text style={styles.errorLabels}>

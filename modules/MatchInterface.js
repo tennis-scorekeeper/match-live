@@ -48,33 +48,135 @@ export default class MatchInterface extends React.Component {
   }
 
   render() {
-    errorLabel = (
-        <Text style={styles.errorLabels}>
-          {this.match.getCurrentGameScore()}
-        </Text>
+    var p1name = this.state.match.p1name;
+    var p2name = this.state.match.p2name;
+    let scoreButtons;
+    if (this.match.checkPlayerOneLeftSide()) {
+      scoreButtons = (
+        <View style={styles.scoreButtonRow}>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.playerOneScore}
+              style={styles.scoreButton}
+            >
+              <Text style={styles.scoreButtonText}>{p1name}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.playerTwoScore}
+              style={styles.scoreButton}
+            >
+              <Text style={styles.scoreButtonText}>{p2name}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       );
-      console.log(this.match.getGameHistory());
+    } else {
+      scoreButtons = (
+        <View style={styles.scoreButtonRow}>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.playerTwoScore}
+              style={styles.scoreButton}
+            >
+              <Text style={styles.scoreButtonText}>{p2name}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.playerOneScore}
+              style={styles.scoreButton}
+            >
+              <Text style={styles.scoreButtonText}>{p1name}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+    if (this.match.checkPlayerOneServing()) {
+      p1name += '*';
+    } else {
+      p2name += '*';
+    }
+    gameScore = (
+      <Text style={styles.gameScore}>
+        {this.match.getCurrentGameScore()}
+      </Text>
+    );
+    var setScores = this.match.getSetScores();
+    while (setScores.length < 10) {
+      setScores.push(null);
+    }
+    var p1SetScoresDisplays = [];
+    var p2SetScoresDisplays = [];
+    var i;
+    for (i = 0; i < setScores.length-2; i += 2) {
+      p1SetScoresDisplays.push(
+        <View key={i} style={styles.setScoreTop}>
+          <Text style={styles.scoreboardText}>
+            {setScores[i]}
+          </Text>
+        </View>
+      );
+    }
+    p1SetScoresDisplays.push(
+      <View key={8} style={styles.setScoreTopRight}>
+        <Text style={styles.scoreboardText}>
+          {setScores[8]}
+        </Text>
+      </View>
+    );
+
+    for (i = 1; i < setScores.length-2; i += 2) {
+      p2SetScoresDisplays.push(
+        <View key={i} style={styles.setScoreBottom}>
+          <Text style={styles.scoreboardText}>
+            {setScores[i]}
+          </Text>
+        </View>
+      );
+    }
+    p2SetScoresDisplays.push(
+      <View key={9} style={styles.setScoreBottomRight}>
+        <Text style={styles.scoreboardText}>
+          {setScores[9]}
+        </Text>
+      </View>
+    );
+    
     return (
       <ScrollView style={styles.mainView}>
-        <View style={styles.subView}>{errorLabel}</View>
-        <TouchableOpacity
-            onPress={this.playerOneScore}
-            style={styles.buttons}
-          >
-            <Text style={styles.buttonText}>Player One</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={this.playerTwoScore}
-            style={styles.buttons}
-          >
-            <Text style={styles.buttonText}>Player Two</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={this.undo}
-            style={styles.buttons}
-          >
-            <Text style={styles.buttonText}>Undo</Text>
-          </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <View style={styles.undoButtonView}>
+            <TouchableOpacity
+              onPress={this.undo}
+              style={styles.undoButton}
+            >
+              <Text style={styles.undoButtonText}>Undo</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.scoreboard}>
+          <View style={styles.scoreboardNameTop}>
+            <Text style={styles.scoreboardText}>
+              {p1name}
+            </Text>
+          </View>
+          {p1SetScoresDisplays}
+        </View>
+        <View style={styles.scoreboard}>
+          <View style={styles.scoreboardNameBottom}>
+            <Text style={styles.scoreboardText}>
+              {p2name}
+            </Text>
+          </View>
+          {p2SetScoresDisplays}
+        </View>
+        <View style={styles.gameScoreView}>
+          {gameScore}
+        </View>
+        {scoreButtons}
       </ScrollView>
     );
   }
@@ -82,55 +184,116 @@ export default class MatchInterface extends React.Component {
 
 const styles = StyleSheet.create({
   mainView: {
-    marginTop: 20,
   },
-  subView: {
-    alignItems: "center",
+  buttonRow: {
+    flex:1,
+    flexDirection: "row",
     marginBottom: 20,
-    marginLeft: 20,
-    marginRight: 20,
-    flex: 1
   },
-  subView2: {
-    alignItems: "center",
-    marginBottom: 20,
-    marginLeft: 20,
-    marginRight: 20,
-    flex: 1,
-    flexDirection: "row"
+  undoButtonView: {
+    flex:1,
+    alignItems:'flex-end',
   },
-  inputs: {
-    width: 150,
-    height: 50,
-    fontSize: 16,
-    borderBottomColor: "black",
-    borderBottomWidth: 2,
-    marginLeft: 10,
-    marginRight: 10
-  },
-  labels: {
-    fontWeight: "bold",
-    color: "black",
-    fontSize: 16,
-    marginLeft: 10,
-    marginRight: 10
-  },
-  errorLabels: {
-    fontWeight: "bold",
-    color: "red",
-    fontSize: 16
-  },
-  buttons: {
+  undoButton: {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "blue",
-    width: 150,
-    height: 50
+    width: 75,
+    height: 40,
   },
-  buttonText: {
+  undoButtonText: {
     fontWeight: "bold",
     color: "white",
-    fontSize: 16
+    fontSize: 16,
+  },
+  scoreboard: {
+    alignItems: "center",
+    marginLeft: 75,
+    marginRight: 75,
+    flex: 1,
+    flexDirection: "row"
+  },
+  scoreboardNameTop: {
+    flex: 3,
+    borderColor: 'black',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+  },
+  scoreboardNameBottom: {
+    flex: 3,
+    borderColor: 'black',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+  },
+  setScoreTop: {
+    flex: 1,
+    borderColor: 'black',
+    alignItems: 'center',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+  },
+  setScoreTopRight: {
+    flex: 1,
+    borderColor: 'black',
+    alignItems: 'center',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+  },
+  setScoreBottom: {
+    flex: 1,
+    borderColor: 'black',
+    alignItems: 'center',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+  },
+  setScoreBottomRight: {
+    flex: 1,
+    borderColor: 'black',
+    alignItems: 'center',
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+  },
+  scoreboardText: {
+    color: 'black',
+    fontSize: 16,
+  },
+  gameScoreView: {
+    alignItems: "center",
+    margin: 20,
+    flex: 1
+  },
+  gameScore: {
+    fontWeight: "bold",
+    color: "black",
+    fontSize: 48,
+  },
+  scoreButtonRow: {
+    flex:1,
+    flexDirection: "row",
+    marginBottom: 20,
+    marginLeft: 20,
+    marginRight: 20,
+  },
+  scoreButtonView: {
+    flex: 1,
+    alignItems: "center",
+  },
+  scoreButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "blue",
+    width: 125,
+    height: 50,
+  },
+  scoreButtonText: {
+    fontWeight: "bold",
+    color: "white",
+    fontSize: 20,
   },
   picker: {
     fontSize: 16,

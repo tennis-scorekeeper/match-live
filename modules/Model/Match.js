@@ -53,7 +53,7 @@ export default class Match {
   }
 
   checkPlayerOneLeftSide() {
-    var totalGames = currentMatchState.getTotalGames();
+    var totalGames = this.currentMatchState.getTotalGames();
 
     var playerOneLeftSide = this.playerOneStartedLeft;
     if (totalGames == 0) {

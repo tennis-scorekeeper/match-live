@@ -87,6 +87,7 @@ export default class CreateMatch extends React.Component {
 
     navigate("MatchInterface", {
       email: email,
+      match: match,
       matchIndex: matchIndex,
       p1serve: p1serve,
       p1left: p1left,

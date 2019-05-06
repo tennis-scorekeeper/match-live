@@ -22,7 +22,7 @@ export default class CreateMatch extends React.Component {
       match: tmp,
       courtNumber: "",
       tossWinner: tmp.p1name,
-      tossChoice: "Serve",
+      tossChoice: "serve",
       leftOfChair: tmp.p1name,
       rightOfChair: tmp.p2name,
       chairUmpire: ""
@@ -34,7 +34,7 @@ export default class CreateMatch extends React.Component {
   };
 
   startMatch = () => {
-    const { replace, navigate } = this.props.navigation;
+    const { replace, navigate, pop } = this.props.navigation;
     var {
       email,
       tournamentId,
@@ -54,7 +54,7 @@ export default class CreateMatch extends React.Component {
         tournamentId: tournamentId,
         match: match,
         error: "invalidInput",
-        onGoBack: () => this.refresh()
+        onGoBack: this.props.navigation.state.params.onGoBack
       });
     } else if (leftOfChair == rightOfChair) {
       replace("Prematch", {
@@ -62,7 +62,7 @@ export default class CreateMatch extends React.Component {
         tournamentId: tournamentId,
         match: match,
         error: "sameLeftAndRight",
-        onGoBack: () => this.refresh()
+        onGoBack: this.props.navigation.state.params.onGoBack
       });
     } else {
       var p1serve = true;
@@ -82,7 +82,7 @@ export default class CreateMatch extends React.Component {
       if (leftOfChair == match.p2name) {
         p1left = false;
       }
-
+      pop();
       navigate("MatchInterface", {
         email: email,
         tournamentId: tournamentId,
@@ -90,7 +90,8 @@ export default class CreateMatch extends React.Component {
         p1serve: p1serve,
         p1left: p1left,
         ads: ads,
-        matchFormat: parseInt(match.matchFormat)
+        matchFormat: parseInt(match.matchFormat),
+        onGoBack: this.props.navigation.state.params.onGoBack
       });
     }
   };

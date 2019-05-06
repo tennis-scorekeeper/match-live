@@ -4,7 +4,8 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  BackHandler
 } from "react-native";
 import firebase from "react-native-firebase";
 import { isValidInput } from "./util.js";
@@ -29,7 +30,22 @@ export default class MatchInterface extends React.Component {
     );
   }
 
+  static navigationOptions = {
+    title: "Match Interface",
+    headerLeft: null,
+  };
+
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.onBackButtonPressed);
+  }
+
+  onBackButtonPressed() {
+    return true;
+  }
+
   componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.onBackButtonPressed);
     var matchRef = firebase
       .database()
       .ref()
@@ -69,15 +85,13 @@ export default class MatchInterface extends React.Component {
         matchRef.update({
           started: true,
           p1ServedFirst: this.props.navigation.state.params.p1serve,
-          p1StartedLeft: this.props.navigation.state.params.p1left
+          p1StartedLeft: this.props.navigation.state.params.p1left,
+          setScores: [0,0],
+          gameScore: [0,0],
         });
       }
     });
   }
-
-  static navigationOptions = {
-    title: "Match Interface"
-  };
 
   updatePage() {
     var matchRef = firebase
@@ -112,9 +126,33 @@ export default class MatchInterface extends React.Component {
     this.updatePage();
   };
 
+  resetMatch = () => {
+    var matchRef = firebase
+      .database()
+      .ref()
+      .child("tournaments")
+      .child(this.state.tournamentId)
+      .child("matches")
+      .child(this.state.match.id);
+    matchRef.update({started: false}).then(tmp => {
+      this.props.navigation.state.params.onGoBack();
+      this.props.navigation.goBack();
+    });
+  }
+
   render() {
-    var p1name = this.state.match.p1name;
-    var p2name = this.state.match.p2name;
+    const p1Split = this.state.match.p1name.split(" ");
+    const p2Split = this.state.match.p2name.split(" ");
+    var p1name = p1Split[p1Split.length - 1];
+    var p2name = p2Split[p2Split.length - 1];
+    var p1nameScoreboard = p1name;
+    var p2nameScoreboard = p2name;
+
+    if (this.match.checkPlayerOneServing()) {
+      p1nameScoreboard += "*";
+    } else {
+      p2nameScoreboard += "*";
+    }
 
     var p1GameScore = this.match.getCurrentGamePlayerOneScore();
     var p2GameScore = this.match.getCurrentGamePlayerTwoScore();
@@ -141,6 +179,8 @@ export default class MatchInterface extends React.Component {
     }
 
     let scoreButtons;
+    let courtTopLeftText, courtTopRightText, courtBottomLeftText, courtBottomRightText;
+    const deuceSide = (p1GameScore + p2GameScore) % 2 == 0;
     if (this.match.checkPlayerOneLeftSide()) {
       scoreButtons = (
         <View style={styles.scoreButtonRow}>
@@ -162,6 +202,21 @@ export default class MatchInterface extends React.Component {
           </View>
         </View>
       );
+      if (deuceSide) {
+        courtBottomLeftText = (
+          <Text style={styles.scoreboardText}>{p1nameScoreboard}</Text>
+        );
+        courtTopRightText = (
+          <Text style={styles.scoreboardText}>{p2nameScoreboard}</Text>
+        );
+      } else {
+        courtTopLeftText = (
+          <Text style={styles.scoreboardText}>{p1nameScoreboard}</Text>
+        );
+        courtBottomRightText = (
+          <Text style={styles.scoreboardText}>{p2nameScoreboard}</Text>
+        );
+      }
     } else {
       scoreButtons = (
         <View style={styles.scoreButtonRow}>
@@ -183,12 +238,21 @@ export default class MatchInterface extends React.Component {
           </View>
         </View>
       );
-    }
-
-    if (this.match.checkPlayerOneServing()) {
-      p1name += "*";
-    } else {
-      p2name += "*";
+      if (deuceSide) {
+        courtBottomLeftText = (
+          <Text style={styles.scoreboardText}>{p2nameScoreboard}</Text>
+        );
+        courtTopRightText = (
+          <Text style={styles.scoreboardText}>{p1nameScoreboard}</Text>
+        );
+      } else {
+        courtTopLeftText = (
+          <Text style={styles.scoreboardText}>{p2nameScoreboard}</Text>
+        );
+        courtBottomRightText = (
+          <Text style={styles.scoreboardText}>{p1nameScoreboard}</Text>
+        );
+      }
     }
 
     var setScores = this.match.getSetScores();
@@ -227,6 +291,11 @@ export default class MatchInterface extends React.Component {
     return (
       <ScrollView style={styles.mainView}>
         <View style={styles.buttonRow}>
+          <View style={styles.resetButtonView}>
+            <TouchableOpacity onPress={this.resetMatch} style={styles.resetButton}>
+              <Text style={styles.undoButtonText}>Reset Match</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.undoButtonView}>
             <TouchableOpacity onPress={this.undo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>Undo</Text>
@@ -235,19 +304,34 @@ export default class MatchInterface extends React.Component {
         </View>
         <View style={styles.scoreboard}>
           <View style={styles.scoreboardNameTop}>
-            <Text style={styles.scoreboardText}>{p1name}</Text>
+            <Text style={styles.scoreboardText}>{p1nameScoreboard}</Text>
           </View>
           {p1SetScoresDisplays}
         </View>
         <View style={styles.scoreboard}>
           <View style={styles.scoreboardNameBottom}>
-            <Text style={styles.scoreboardText}>{p2name}</Text>
+            <Text style={styles.scoreboardText}>{p2nameScoreboard}</Text>
           </View>
           {p2SetScoresDisplays}
         </View>
         <View style={styles.gameScoreView}>{gameScore}</View>
-        <View style={styles.gameHistoryView}>
-          <Text>{this.match.getGameHistory()}</Text>
+        <View style={styles.historyCourtView}>
+          <View style={styles.gameHistoryView}>
+            <Text style={styles.scoreboardText}>History</Text>
+            <Text>{this.match.getGameHistory()}</Text>
+          </View>
+          <View style={styles.courtView}>
+            <View style={styles.courtHalf}>
+              <View style={styles.courtTopLeft}>{courtTopLeftText}</View>
+              <View style={styles.courtTopRight}>{courtTopRightText}</View>
+            </View>
+            <View style={styles.courtHalf}>
+              <View style={styles.courtBottomLeft}>{courtBottomLeftText}</View>
+              <View style={styles.courtBottomRight}>{courtBottomRightText}</View>
+            </View>
+          </View>
+          <View style={styles.gameHistoryView}>
+          </View>
         </View>
         {scoreButtons}
       </ScrollView>
@@ -263,6 +347,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     marginBottom: 20
+  },
+  resetButtonView: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  resetButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "blue",
+    width: 100,
+    height: 40
   },
   undoButtonView: {
     flex: 1,
@@ -346,17 +441,50 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 48
   },
-  gameHistoryView: {
+  historyCourtView: {
     alignItems: "center",
     margin: 20,
-    height: 100
+    flex: 1,
+    flexDirection: "row"
+  },
+  gameHistoryView: {
+    alignItems: "center",
+    height: 100,
+    flex: 1,
+  },
+  courtView: {
+    flex:2,
+    backgroundColor: "#42bc56",
+  },
+  courtHalf: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  courtTopLeft: {
+    flex: 1,
+    borderWidth: 3,
+  },
+  courtTopRight: {
+    flex: 1,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderBottomWidth: 3,
+  },
+  courtBottomLeft: {
+    flex: 1,
+    borderLeftWidth: 3,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+  },
+  courtBottomRight: {
+    flex: 1,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
   },
   scoreButtonRow: {
     flex: 1,
     flexDirection: "row",
-    marginBottom: 20,
-    marginLeft: 20,
-    marginRight: 20
+    margin: 20,
   },
   scoreButtonView: {
     flex: 1,

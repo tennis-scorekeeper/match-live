@@ -58,12 +58,25 @@ export default class MatchList extends React.Component {
 
   selectMatch(m) {
     const { navigate } = this.props.navigation;
-    navigate("Prematch", {
-      email: this.state.email,
-      tournamentId: this.state.tournament.id,
-      match: m,
-      onGoBack: () => this.refresh()
-    });
+    if (m.started) {
+      navigate("MatchInterface", {
+        email: this.state.email,
+        tournamentId: this.state.tournament.id,
+        match: m,
+        p1serve: true,
+        p1left: true,
+        ads: true,
+        matchFormat: 0,
+        onGoBack: () => this.refresh()
+      });
+    } else {
+      navigate("Prematch", {
+        email: this.state.email,
+        tournamentId: this.state.tournament.id,
+        match: m,
+        onGoBack: () => this.refresh()
+      });
+    }
   }
 
   manageUmpires = () => {

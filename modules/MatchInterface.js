@@ -80,6 +80,7 @@ export default class MatchInterface extends React.Component {
           this.match.incrementPlayerTwoScore();
           p2GameScore--;
         }
+        matchRef.update({umpire: this.state.email.toLowerCase().replace(".", ",")});
         this.forceUpdate();
       } else {
         matchRef.update({
@@ -88,6 +89,7 @@ export default class MatchInterface extends React.Component {
           p1StartedLeft: this.props.navigation.state.params.p1left,
           setScores: [0,0],
           gameScore: [0,0],
+          umpire: this.state.email.toLowerCase().replace(".", ","),
         });
       }
     });

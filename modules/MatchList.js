@@ -4,7 +4,8 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import firebase from "react-native-firebase";
 
@@ -56,26 +57,86 @@ export default class MatchList extends React.Component {
     });
   };
 
+  startMatch(m) {
+    this.props.navigation.navigate("Prematch", {
+      email: this.state.email,
+      tournamentId: this.state.tournament.id,
+      match: m,
+      onGoBack: () => this.refresh()
+    });
+  }
+
+  resumeMatch(m) {
+    this.props.navigation.navigate("MatchInterface", {
+      email: this.state.email,
+      tournamentId: this.state.tournament.id,
+      match: m,
+      p1serve: true,
+      p1left: true,
+      ads: true,
+      matchFormat: 0,
+      onGoBack: () => this.refresh()
+    });
+  }
+
+  resetMatch(m) {
+    var matchRef = firebase
+      .database()
+      .ref()
+      .child("tournaments")
+      .child(this.state.tournament.id)
+      .child("matches")
+      .child(m.id);
+    matchRef.update({started: false}).then(tmp => {
+      this.props.navigation.replace("MatchList", this.state);
+    });
+  }
+
+  deleteMatch(m) {
+    
+    this.state.tournament.matches.splice(m.id,1);
+    var matchRef = firebase
+      .database()
+      .ref()
+      .child("tournaments")
+      .child(this.state.tournament.id)
+    matchRef.update({matches: this.state.tournament.matches}).then(tmp => {
+      this.props.navigation.replace("MatchList", this.state);
+    });
+  }
+
   selectMatch(m) {
     const { navigate } = this.props.navigation;
     if (m.started) {
-      navigate("MatchInterface", {
-        email: this.state.email,
-        tournamentId: this.state.tournament.id,
-        match: m,
-        p1serve: true,
-        p1left: true,
-        ads: true,
-        matchFormat: 0,
-        onGoBack: () => this.refresh()
-      });
+      if (m.umpire == this.state.email.toLowerCase().replace(".", ",")) {
+        Alert.alert(
+          m.p1name + ' vs. ' + m.p2name,
+          '',
+          [
+            {text: 'Resume Match', onPress: () => this.resumeMatch(m)},
+            {text: 'Reset Match', onPress: () => this.resetMatch(m)},
+            {text: 'Cancel'},
+          ],
+        );
+      } else {
+        Alert.alert(
+          'This match is in progress!',
+          'Umpire: ' + m.umpire.replace(",","."),
+          [
+            {text: 'OK'},
+          ],
+        );
+      }
     } else {
-      navigate("Prematch", {
-        email: this.state.email,
-        tournamentId: this.state.tournament.id,
-        match: m,
-        onGoBack: () => this.refresh()
-      });
+      Alert.alert(
+        m.p1name + ' vs. ' + m.p2name,
+        '',
+        [
+          {text: 'Start Match', onPress: () => this.startMatch(m)},
+          {text: 'Delete Match', onPress: () => this.deleteMatch(m)},
+          {text: 'Cancel'},
+        ],
+      );
     }
   }
 

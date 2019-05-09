@@ -99,7 +99,11 @@ export default class MatchList extends React.Component {
       .database()
       .ref()
       .child("tournaments")
-      .child(this.state.tournament.id)
+      .child(this.state.tournament.id);
+    var i = 0;
+    for (i = 0; i < this.state.tournament.matches.length; i++) {
+      this.state.tournament.matches[i].id = i;
+    }
     matchRef.update({matches: this.state.tournament.matches}).then(tmp => {
       this.props.navigation.replace("MatchList", this.state);
     });
@@ -116,6 +120,15 @@ export default class MatchList extends React.Component {
             {text: 'Resume Match', onPress: () => this.resumeMatch(m)},
             {text: 'Reset Match', onPress: () => this.resetMatch(m)},
             {text: 'Cancel'},
+          ],
+        );
+      } else if (this.state.tournament.admin == this.state.email.toLowerCase().replace(".", ",")) {
+        Alert.alert(
+          'This match is in progress!',
+          'Umpire: ' + m.umpire.replace(",","."),
+          [
+            {text: 'Reset Match', onPress: () => this.resetMatch(m)},
+            {text: 'OK'},
           ],
         );
       } else {

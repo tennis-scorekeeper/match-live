@@ -108,14 +108,28 @@ export default class MatchList extends React.Component {
       this.props.navigation.replace("MatchList", this.state);
     });
   }
+  
+  getStartedMatchScore(m) {
+    const scores = ["0", "15", "30", "40"];
+    var result = "";
+    var i;
+    for (i = 0; i < m.setScores.length; i += 2) {
+      result += m.setScores[i] + '-' + m.setScores[i+1] + ' ';
+    }
+    if (m.gameScore[0] < 4 && m.gameScore[1] < 4) {
+      result += '(' + scores[m.gameScore[0]] + '-' + scores[m.gameScore[1]] + ')';
+    } else {
+      result += '(' + m.gameScore[0] + '-' + m.gameScore[1] + ')';
+    }
+    return result;
+  }
 
   selectMatch(m) {
-    const { navigate } = this.props.navigation;
     if (m.started) {
       if (m.umpire == this.state.email.toLowerCase().replace(".", ",")) {
         Alert.alert(
           m.p1name + ' vs. ' + m.p2name,
-          '',
+          "Score: " + this.getStartedMatchScore(m),
           [
             {text: 'Resume Match', onPress: () => this.resumeMatch(m)},
             {text: 'Reset Match', onPress: () => this.resetMatch(m)},
@@ -125,7 +139,8 @@ export default class MatchList extends React.Component {
       } else if (this.state.tournament.admin == this.state.email.toLowerCase().replace(".", ",")) {
         Alert.alert(
           'This match is in progress!',
-          'Umpire: ' + m.umpire.replace(",","."),
+          'Umpire: ' + m.umpire.replace(",",".") + '\n' + 
+          "Score: " + this.getStartedMatchScore(m),
           [
             {text: 'Reset Match', onPress: () => this.resetMatch(m)},
             {text: 'OK'},
@@ -134,7 +149,8 @@ export default class MatchList extends React.Component {
       } else {
         Alert.alert(
           'This match is in progress!',
-          'Umpire: ' + m.umpire.replace(",","."),
+          'Umpire: ' + m.umpire.replace(",",".") + '\n' + 
+          "Score: " + this.getStartedMatchScore(m),
           [
             {text: 'OK'},
           ],

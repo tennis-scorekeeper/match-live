@@ -128,6 +128,24 @@ export default class MatchInterface extends React.Component {
     this.updatePage();
   };
 
+  ace = () => {
+    this.match.serverAced();
+    this.updatePage();
+  }
+
+  fault = () => {
+    this.match.serverFaulted();
+    this.updatePage();
+  }
+
+  let = () => {
+    this.match.let();
+    this.updatePage();
+  }
+
+  options = () => {
+  }
+
   resetMatch = () => {
     var matchRef = firebase
       .database()
@@ -257,6 +275,83 @@ export default class MatchInterface extends React.Component {
       }
     }
 
+    let optionButtons;
+    if (this.match.getFaulted()) {
+      optionButtons = (
+        <View style={styles.scoreButtonRow}>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.ace}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Ace</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.fault}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Double Fault</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.let}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Let</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.options}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Options</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    } else {
+      optionButtons = (
+        <View style={styles.scoreButtonRow}>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.ace}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Ace</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.fault}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Fault</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.let}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Let</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.scoreButtonView}>
+            <TouchableOpacity
+              onPress={this.options}
+              style={styles.optionButton}
+            >
+              <Text style={styles.scoreButtonText}>Options</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
     var setScores = this.match.getSetScores();
     while (setScores.length < 10) {
       setScores.push(null);
@@ -336,6 +431,7 @@ export default class MatchInterface extends React.Component {
           </View>
         </View>
         {scoreButtons}
+        {optionButtons}
       </ScrollView>
     );
   }
@@ -503,6 +599,13 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     fontSize: 20
+  },
+  optionButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "blue",
+    width: 75,
+    height: 50
   },
   picker: {
     fontSize: 16,

@@ -217,7 +217,7 @@ export default class Match {
         false,
         false,
         false,
-        currentMatchState,
+        this.currentMatchState,
         false,
         null,
         null
@@ -227,7 +227,7 @@ export default class Match {
       } else {
         nextMatchState.playerTwoSubtractFault();
       }
-      this.pastMatchStates.push(currentMatchState);
+      this.pastMatchStates.push(this.currentMatchState);
       this.currentMatchState = nextMatchState;
     }
   }

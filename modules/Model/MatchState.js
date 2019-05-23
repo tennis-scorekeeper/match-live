@@ -223,20 +223,20 @@ export default class MatchState {
   }
 
   playerOneAce() {
-    var nextMatchState = incrementPlayerOneScore();
+    var nextMatchState = this.incrementPlayerOneScore();
     nextMatchState.playerOneAces += 1;
     return nextMatchState;
   }
 
   playerTwoAce() {
-    var nextMatchState = incrementPlayerTwoScore();
+    var nextMatchState = this.incrementPlayerTwoScore();
     nextMatchState.playerTwoAces += 1;
     return nextMatchState;
   }
 
   playerOneFault() {
     if (this.faulted) {
-      var nextMatchState = incrementPlayerTwoScore();
+      var nextMatchState = this.incrementPlayerTwoScore();
       nextMatchState.playerOneDoubleFaults += 1;
       return nextMatchState;
     } else {
@@ -257,7 +257,7 @@ export default class MatchState {
 
   playerTwoFault() {
     if (this.faulted) {
-      var nextMatchState = incrementPlayerOneScore();
+      var nextMatchState = this.incrementPlayerOneScore();
       nextMatchState.playerTwoDoubleFaults += 1;
       return nextMatchState;
     } else {
@@ -277,7 +277,7 @@ export default class MatchState {
   }
   playerOneTimeViolation(pointPenalty) {
     if (pointPenalty) {
-      var nextMatchState = incrementPlayerTwoScore();
+      var nextMatchState = this.incrementPlayerTwoScore();
       nextMatchState.playerOneTimeViolations += 1;
       return nextMatchState;
     } else {
@@ -297,7 +297,7 @@ export default class MatchState {
 
   playerTwoTimeViolation(pointPenalty) {
     if (pointPenalty) {
-      var nextMatchState = incrementPlayerOneScore();
+      var nextMatchState = this.incrementPlayerOneScore();
       nextMatchState.playerTwoTimeViolations += 1;
       return nextMatchState;
     } else {
